@@ -2,6 +2,7 @@ package com.pega.mobile.constellation.sdk.internal.webview.interceptor
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import android.webkit.WebView
@@ -25,11 +26,13 @@ internal class WebViewAssetInterceptor(
         request: WebResourceRequest
     ): WebResourceResponse? {
         val requestUrl = request.url.toString()
+        Log.d("WebViewAssetInterceptor","requestUrl:$requestUrl")
         val url = when {
             requestUrl == pegaUrl -> "$ASSETS_URL/$INDEX_HTML_PATH"
             requestUrl.contains(baseUrlWithAssetsPath) -> requestUrl.replace(baseUrl, ASSETS_URL)
             else -> null
         }
+        Log.d("WebViewAssetInterceptor","url:$url")
         return url?.let { assetLoader.shouldInterceptRequest(Uri.parse(it)) }
     }
 
