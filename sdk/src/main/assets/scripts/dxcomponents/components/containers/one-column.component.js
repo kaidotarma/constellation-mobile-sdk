@@ -1,16 +1,21 @@
 import {ContainerBaseComponent} from './container-base.component.js';
+import {ReferenceComponent} from './reference.component.js';
 
 export class OneColumnComponent extends ContainerBaseComponent {
   props;
 
-  constructor(componentsManager, pConn) {
+  constructor(componentsManager, pConn, childrenPConns) {
     super(componentsManager, pConn);
     this.type = "OneColumn"
+    this.childrenPConns = childrenPConns;
   }
 
   init() {
     this.componentsManager.onComponentAdded(this);
-    this.reconcileChildren();
+    this.childrenPConns = ReferenceComponent.normalizePConnArray(this.childrenPConns);
+    const reconciledComponents = this.reconcileChildren();
+    this.childrenComponents = reconciledComponents.map((item) => item.component);
+    this.initReconciledComponents(reconciledComponents);
     this.sendPropsUpdate();
   }
 
@@ -22,14 +27,19 @@ export class OneColumnComponent extends ContainerBaseComponent {
     this.componentsManager.onComponentRemoved(this);
   }
 
-  update(pConn) {
+  update(pConn, childrenPConns) {
     this.pConn = pConn;
-    this.reconcileChildren();
+    this.childrenPConns = ReferenceComponent.normalizePConnArray(childrenPConns);
+
+    const reconciledComponents = this.reconcileChildren();
+    this.childrenComponents = reconciledComponents.map((item) => item.component);
+    this.initReconciledComponents(reconciledComponents);
+
     this.sendPropsUpdate();
   }
 
   onEvent(event) {
-    this.childrenComponents.forEach(component => component.onEvent(event));
+    this.childrenComponents.forEach((component) => {component.onEvent(event);})
   }
 
   sendPropsUpdate() {

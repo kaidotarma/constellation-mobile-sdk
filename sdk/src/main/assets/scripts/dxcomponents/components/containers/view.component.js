@@ -1,4 +1,5 @@
-import {ReferenceComponent} from './reference.component.js';
+import { ReferenceComponent } from './reference.component.js';
+import { getComponentFromMap } from '../../mappings/sdk-component-map.js';
 import {ContainerBaseComponent} from './container-base.component.js';
 
 const TAG = '[ViewComponent]';
@@ -10,10 +11,9 @@ export class ViewComponent extends ContainerBaseComponent {
     'DetailsTwoColumn', 'NarrowWideDetails', 'WideNarrowDetails'
   ];
 
+  FORM_TEMPLATES = ['DefaultForm', 'OneColumn', 'TwoColumn', 'ThreeColumn', 'WideNarrow'];
   SUPPORTED_FORM_TEMPLATES = ['DefaultForm', 'OneColumn'];
-  UNSUPPORTED_FORM_TEMPLATES = ['TwoColumn', 'ThreeColumn', 'WideNarrow'];
-
-  SUPPORTED_TEMPLATES = [...this.SUPPORTED_FORM_TEMPLATES, 'SimpleTable'];
+  VIEW_TEMPLATES = ['SimpleTable'];
 
   jsComponentPConnectData = {};
   props = {
@@ -40,6 +40,8 @@ export class ViewComponent extends ContainerBaseComponent {
   update(pConn) {
     if (this.pConn !== pConn) {
       this.pConn = pConn;
+      this.jsComponentPConnectData.unsubscribeFn?.();
+      this.jsComponentPConnectData = this.jsComponentPConnect.registerAndSubscribeComponent(this, this.#checkAndUpdate);
       this.#checkAndUpdate();
     }
   }
@@ -51,9 +53,7 @@ export class ViewComponent extends ContainerBaseComponent {
   }
 
   #checkAndUpdate() {
-    // sometimes (e.g.: when going "previous" on form) the response contains view (pzCreateDetails) which is 'dynamic'
-    // and no matter of its children shouldComponentUpdate returns false and form is not re-rendered correctly
-    if (this.jsComponentPConnect.shouldComponentUpdate(this) || this.pConn.meta.isDynamicView?.toString() === 'true') {
+    if (this.jsComponentPConnect.shouldComponentUpdate(this)) {
       this.#updateSelf();
     }
   }
@@ -69,9 +69,9 @@ export class ViewComponent extends ContainerBaseComponent {
     const configProps = this.pConn.resolveConfigProps(this.pConn.getConfigProps());
     const inheritedProps = this.pConn.getInheritedProps();
 
-    const template = this.#resolveTemplateType(configProps);
+    const templateName = configProps.template ?? '';
     const label = configProps.label ?? '';
-    const showLabel = configProps.showLabel || this.DETAILS_TEMPLATES.includes(template) || this.props.showLabel;
+    const showLabel = configProps.showLabel || this.#isDetailsTemplate(templateName) || this.props.showLabel;
 
     this.props.label = inheritedProps.label ?? label;
     this.props.showLabel = inheritedProps.showLabel ?? showLabel;
@@ -88,23 +88,42 @@ export class ViewComponent extends ContainerBaseComponent {
       this.props.visible = this.#evaluateVisibility(this.pConn, configProps.referenceContext);
     }
 
-    if (this.SUPPORTED_TEMPLATES.includes(template)) {
-      this.#includeTemplate(template);
+    // children may have a 'reference' so normalize the children array
+    this.childrenPConns = ReferenceComponent.normalizePConnArray(this.pConn.getChildren());
+
+    if (templateName !== '') {
+      if (this.childrenComponents[0] !== undefined) {
+        this.childrenComponents[0].update(this.pConn, this.childrenPConns);
+      } else {
+        if (this.FORM_TEMPLATES.includes(templateName)) {
+          const template = this.SUPPORTED_FORM_TEMPLATES.includes(templateName) ? templateName : 'DefaultForm';
+          this.#createTemplateChildComponent(template);
+        } else if (this.VIEW_TEMPLATES.includes(templateName)) {
+          this.#createTemplateChildComponent(templateName)
+        } else {
+          console.warn(TAG, `${templateName} not supported. Rendering children components directly.`);
+          this.#createChildrenComponents()
+        }
+      }
     } else {
-      if (template) console.warn(TAG, `${template} not supported. Rendering children components directly.`);
-      this.reconcileChildren();
+      this.#createChildrenComponents()
     }
 
     this.props.children = this.getChildrenComponentsIds();
     this.componentsManager.onComponentPropsUpdate(this)
   }
 
-  #includeTemplate(template) {
-    if (this.childrenComponents[0] && this.childrenComponents[0].type !== template) {
-      this.destroyChildren();
-    }
+  #createTemplateChildComponent(templateName) {
+    const templateComponentClass = getComponentFromMap(templateName);
+    const templateComponentInstance = new templateComponentClass(this.componentsManager, this.pConn, this.childrenPConns);
+    templateComponentInstance.init();
+    this.childrenComponents.push(templateComponentInstance);
+  }
 
-    this.childrenComponents[0] = this.componentsManager.upsert(this.childrenComponents[0], template, [this.pConn]);
+  #createChildrenComponents() {
+    const reconciledComponents = this.reconcileChildren();
+    this.childrenComponents = reconciledComponents.map((item) => item.component);
+    this.initReconciledComponents(reconciledComponents);
   }
 
   #evaluateVisibility(pConn, referenceContext) {
@@ -149,13 +168,7 @@ export class ViewComponent extends ContainerBaseComponent {
     return page;
   }
 
-  #resolveTemplateType(configProps) {
-    const template = configProps.template ?? '';
-    if (this.UNSUPPORTED_FORM_TEMPLATES.includes(template)) {
-      console.warn(TAG, `${template} not supported. Falling back to DefaultForm.`);
-      return 'DefaultForm';
-    } else {
-      return template;
-    }
+  #isDetailsTemplate(template) {
+    return this.DETAILS_TEMPLATES.includes(template);
   }
 }

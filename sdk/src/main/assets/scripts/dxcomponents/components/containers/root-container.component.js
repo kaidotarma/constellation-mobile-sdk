@@ -1,7 +1,8 @@
-import {Utils} from '../../helpers/utils.js';
-import {BaseComponent} from '../base.component.js';
+import { Utils } from '../../helpers/utils.js';
+import { getComponentFromMap } from '../../mappings/sdk-component-map.js';
+import { BaseComponent } from '../base.component.js';
 
-const options = {context: 'app'};
+const options = { context: 'app' };
 const TAG = '[RootContainerComponent]';
 
 export class RootContainerComponent extends BaseComponent {
@@ -14,7 +15,7 @@ export class RootContainerComponent extends BaseComponent {
   }
 
   init() {
-    const {containers} = PCore.getStore().getState();
+    const { containers } = PCore.getStore().getState();
     const items = Object.keys(containers).filter(item => item.includes('root'));
     PCore.getContainerUtils().getContainerAPI().addContainerItems(items);
     Utils.setHasViewContainer('false');
@@ -61,10 +62,10 @@ export class RootContainerComponent extends BaseComponent {
 
   #updateSelf() {
     const myProps = this.jsComponentPConnect.getCurrentCompleteProps(this);
-    const {renderingMode} = myProps;
+    const { renderingMode } = myProps;
     if (renderingMode === 'noPortal') {
       this.#generateViewContainerForNoPortal();
-    } else {
+    } else  {
       console.error(TAG, "'noPortal' rendering mode supported only.")
     }
   }
@@ -85,7 +86,15 @@ export class RootContainerComponent extends BaseComponent {
       options
     };
     const viewContainerPConn = PCore.createPConnect(viewContConfig).getPConnect();
-    this.#viewContainerComponent = this.componentsManager.upsert(this.#viewContainerComponent, viewContainerPConn.meta.type, [viewContainerPConn]);
+
+    if (this.#viewContainerComponent) {
+      this.#viewContainerComponent.update(viewContainerPConn);
+    } else {
+      const viewContainerComponentClass = getComponentFromMap(viewContainerPConn.meta.type);
+      this.#viewContainerComponent = new viewContainerComponentClass(this.componentsManager, viewContainerPConn);
+      this.#viewContainerComponent.init();
+    }
+
 
     if (this.compId !== "1") {
       console.error(TAG, "RootComponent id must be '1' to match root container on consumer side");

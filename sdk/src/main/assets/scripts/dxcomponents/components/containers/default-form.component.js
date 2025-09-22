@@ -1,12 +1,14 @@
-import {ContainerBaseComponent} from './container-base.component.js';
+import { ReferenceComponent } from './reference.component.js';
+import { ContainerBaseComponent } from './container-base.component.js';
 
 export class DefaultFormComponent extends ContainerBaseComponent {
   instructions;
   props;
 
-  constructor(componentsManager, pConn) {
+  constructor(componentsManager, pConn, childrenPConns) {
     super(componentsManager, pConn);
     this.type = "DefaultForm"
+    this.childrenPConns = childrenPConns;
   }
 
   init() {
@@ -14,7 +16,11 @@ export class DefaultFormComponent extends ContainerBaseComponent {
 
     const configProps = this.pConn.getConfigProps();
     this.instructions = this.getInstructions(this.pConn, configProps?.instructions);
-    this.reconcileChildren();
+    this.childrenPConns = ReferenceComponent.normalizePConnArray(this.childrenPConns);
+    const reconciledComponents = this.reconcileChildren();
+    this.childrenComponents = reconciledComponents.map((item) => item.component);
+    this.initReconciledComponents(reconciledComponents);
+
     this.sendPropsUpdate();
   }
 
@@ -26,22 +32,27 @@ export class DefaultFormComponent extends ContainerBaseComponent {
     this.componentsManager.onComponentRemoved(this);
   }
 
-  update(pConn) {
+  update(pConn, childrenPConns) {
     this.pConn = pConn;
     const configProps = this.pConn.getConfigProps();
     this.instructions = this.getInstructions(this.pConn, configProps?.instructions);
-    this.reconcileChildren();
+    this.childrenPConns = ReferenceComponent.normalizePConnArray(childrenPConns);
+
+    const reconciledComponents = this.reconcileChildren();
+    this.childrenComponents = reconciledComponents.map((item) => item.component);
+    this.initReconciledComponents(reconciledComponents);
+
     this.sendPropsUpdate();
   }
 
   onEvent(event) {
-    this.childrenComponents.forEach(component => component.onEvent(event));
+    this.childrenComponents.forEach((component) => {component.onEvent(event);})
   }
 
   sendPropsUpdate() {
     this.props = {
-      children: this.getChildrenComponentsIds(),
-      instructions: this.instructions || ''
+       children: this.getChildrenComponentsIds(),
+       instructions: this.instructions || ''
     };
     this.componentsManager.onComponentPropsUpdate(this);
   }

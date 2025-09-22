@@ -1,5 +1,6 @@
-import {Utils} from '../../../helpers/utils.js';
-import {BaseComponent} from '../../base.component.js';
+import { Utils } from '../../../helpers/utils.js';
+import {getComponentFromMap} from '../../../mappings/sdk-component-map.js';
+import { BaseComponent } from '../../base.component.js';
 
 export class FieldGroupTemplateComponent extends BaseComponent {
 
@@ -21,11 +22,11 @@ export class FieldGroupTemplateComponent extends BaseComponent {
   pageReference;
   heading;
   children;
+  childrenPConns;
   // menuIconOverride$;
   prevRefLength;
   allowAddEdit;
   fieldHeader;
-
   //
 
   constructor(componentsManager, pConn, configProps) {
@@ -36,14 +37,13 @@ export class FieldGroupTemplateComponent extends BaseComponent {
   }
 
   init() {
+    this.jsComponentPConnectData = this.jsComponentPConnect.registerAndSubscribeComponent(this, this.checkAndUpdate);
     this.componentsManager.onComponentAdded(this);
     this.checkAndUpdate();
   }
 
   destroy() {
-    this.destroyItems();
-    this.props.items = [];
-    this.componentsManager.onComponentPropsUpdate(this);
+    this.jsComponentPConnectData.unsubscribeFn?.();
     this.componentsManager.onComponentRemoved(this);
   }
 
@@ -53,6 +53,8 @@ export class FieldGroupTemplateComponent extends BaseComponent {
         this.configProps = configProps;
         if (pConn) {
           this.pConn = pConn;
+          this.jsComponentPConnectData.unsubscribeFn?.();
+          this.jsComponentPConnectData = this.jsComponentPConnect.registerAndSubscribeComponent(this, this.checkAndUpdate);
         }
         this.updateSelf();
       }
@@ -60,7 +62,9 @@ export class FieldGroupTemplateComponent extends BaseComponent {
   }
 
   checkAndUpdate() {
-    this.updateSelf();
+    if (this.jsComponentPConnect.shouldComponentUpdate(this)) {
+      this.updateSelf();
+    }
   }
 
   updateSelf() {
@@ -86,13 +90,12 @@ export class FieldGroupTemplateComponent extends BaseComponent {
     if (this.readonlyMode) {
       this.pConn.setInheritedProp('displayMode', 'DISPLAY_ONLY');
     }
-    const newReferenceList = this.configProps.referenceList ?? [];
-    if (this.referenceList === undefined || JSON.stringify(this.referenceList) !== JSON.stringify(newReferenceList)) {
-      this.referenceList = newReferenceList;
+    this.referenceList = this.configProps.referenceList;
+    if (this.prevRefLength !== this.referenceList.length) {
       // eslint-disable-next-line sonarjs/no-collapsible-if
       if (!this.readonlyMode) {
         if (this.referenceList?.length === 0 && this.allowAddEdit !== false) {
-          setTimeout(() => this.addFieldGroupItem());
+          this.addFieldGroupItem();
         }
       }
       const items = [];
@@ -101,7 +104,7 @@ export class FieldGroupTemplateComponent extends BaseComponent {
         // all components in list are the same name and type so we can pick any component for re-use.
         const oldComponent = oldItemsComponents.pop();
         const newPConn = this.buildItemPConnect(this.pConn, index, lookForChildInConfig).getPConnect();
-        const newComponent = this.componentsManager.upsert(oldComponent, newPConn.meta.type, [newPConn]);
+        const newComponent = this.reconcileItemComponent(newPConn, oldComponent);
         items.push({
           id: index,
           name: this.fieldHeader === 'propertyRef' ? this.getDynamicHeader(item, index) : this.getStaticHeader(this.heading, index),
@@ -114,9 +117,20 @@ export class FieldGroupTemplateComponent extends BaseComponent {
     this.sendPropsUpdate();
   }
 
+  reconcileItemComponent(pConn, oldComponent) {
+    if (oldComponent !== undefined) {
+      oldComponent.update(pConn)
+      return oldComponent;
+    }
+    const itemComponentClass = getComponentFromMap(pConn.getRawMetadata().type);
+    const itemComponentInstance = new itemComponentClass(this.componentsManager, pConn);
+    itemComponentInstance.init();
+    return itemComponentInstance;
+  }
+
   onEvent(event) {
     if (!this.readonlyMode) {
-      this.items?.forEach((item) => {
+      this.referenceList?.forEach((item) => {
           item.component.onEvent(event);
         }
       )
@@ -150,7 +164,7 @@ export class FieldGroupTemplateComponent extends BaseComponent {
   };
 
   addFieldGroupItem() {
-    this.pConn.getListActions().insert({classID: this.contextClass}, this.referenceList.length);
+    this.pConn.getListActions().insert({ classID: this.contextClass }, this.referenceList.length);
   }
 
   deleteFieldGroupItem(index) {
@@ -194,11 +208,4 @@ export class FieldGroupTemplateComponent extends BaseComponent {
     }
     return resolvePage;
   };
-
-  destroyItems() {
-    this.items.forEach(item => {
-      item.component.destroy?.();
-    })
-    this.items = [];
-  }
 }

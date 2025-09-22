@@ -186,18 +186,7 @@ export class JsComponentPConnectService {
 
     // Now proceed to register and subscribe...
     const theCompID = compId
-    inComp.subscribedToStore = true;
-    const subscribeFn = () => {
-      // store may still notify component right after it unsubscribed itself so we need a flag to prevent that.
-      // When component unsubscribes while reduxBatch is performing notifyListeners loop, listener is removed from the listeners array
-      // but the loop still goes through the original listeners array and calls all listeners including the one that just unsubscribed itself.
-      if (inComp.subscribedToStore === true) {
-        inCallback();
-      } else {
-        console.debug(TAG, `Skipping store event - component ${inComp.pConn.meta.type}#${theCompID} is no longer subscribed to store.`);
-      }
-    };
-    const theUnsub = this.subscribeToStore(inComp, subscribeFn);
+    const theUnsub = this.subscribeToStore(inComp, inCallback);
 
     if (inComp.jsComponentPConnectData === undefined) {
       inComp.bridgeComponentID = theCompID;
@@ -205,7 +194,6 @@ export class JsComponentPConnectService {
       returnObject.compID = theCompID;
       returnObject.unsubscribeFn = () => {
         console.log(TAG, `Unsubscribing component from store: ${inComp.pConn.meta.type}#${theCompID}`);
-        inComp.subscribedToStore = false;
         this.removeFormField(inComp);
         theUnsub();
       };

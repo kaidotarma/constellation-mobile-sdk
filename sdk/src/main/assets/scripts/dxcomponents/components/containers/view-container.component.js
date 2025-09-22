@@ -1,6 +1,7 @@
-import {ReferenceComponent} from './reference.component.js';
-import {Utils} from '../../helpers/utils.js';
-import {BaseComponent} from '../base.component.js';
+import { ReferenceComponent } from './reference.component.js';
+import { Utils } from '../../helpers/utils.js';
+import { getComponentFromMap } from '../../mappings/sdk-component-map.js';
+import { BaseComponent } from '../base.component.js';
 
 const TAG = '[ViewContainerComponent]';
 
@@ -16,8 +17,8 @@ export class ViewContainerComponent extends BaseComponent {
     this.jsComponentPConnectData = this.jsComponentPConnect.registerAndSubscribeComponent(this, this.#checkAndUpdate);
     this.componentsManager.onComponentAdded(this);
 
-    const {CONTAINER_TYPE, APP} = PCore.getConstants();
-    const {name = '', mode = 'single', limit = 16} = this.pConn.resolveConfigProps(this.pConn.getConfigProps());
+    const { CONTAINER_TYPE, APP } = PCore.getConstants();
+    const { name = '', mode = 'single', limit = 16 } = this.pConn.resolveConfigProps(this.pConn.getConfigProps());
 
     const containerMgr = this.pConn.getContainerManager();
     const type = mode === CONTAINER_TYPE.MULTIPLE ? CONTAINER_TYPE.MULTIPLE : CONTAINER_TYPE.SINGLE;
@@ -54,6 +55,8 @@ export class ViewContainerComponent extends BaseComponent {
   update(pConn) {
     if (this.pConn !== pConn) {
       this.pConn = pConn;
+      this.jsComponentPConnectData.unsubscribeFn?.();
+      this.jsComponentPConnectData = this.jsComponentPConnect.registerAndSubscribeComponent(this, this.#checkAndUpdate);
       this.#checkAndUpdate();
     }
   }
@@ -74,7 +77,7 @@ export class ViewContainerComponent extends BaseComponent {
       console.error(TAG, "routingInfo is not available.")
       return;
     }
-    const {accessedOrder, items} = routingInfo;
+    const { accessedOrder, items } = routingInfo;
     if (accessedOrder && items) {
       const lastItemKey = accessedOrder[accessedOrder.length - 1];
       if (this.#hasViewsInRoutingInfo(lastItemKey, items)) {
@@ -87,7 +90,9 @@ export class ViewContainerComponent extends BaseComponent {
         }
         const viewPConn = ReferenceComponent.normalizePConn(newCompPConn);
         this.childComponent?.destroy?.();
-        this.childComponent = this.componentsManager.create(viewPConn.meta.type, [viewPConn]);
+        const viewComponent = getComponentFromMap(viewPConn.meta.type);
+        this.childComponent = new viewComponent(this.componentsManager, viewPConn);
+        this.childComponent.init();
         this.props.children = [this.childComponent.compId];
         this.componentsManager.onComponentPropsUpdate(this);
       }
@@ -107,11 +112,11 @@ export class ViewContainerComponent extends BaseComponent {
    * Creates a new configuration object based on the last item view in the routing info.
    */
   #createNewConfig(lastItemKey, items) {
-    const {CREATE_DETAILS_VIEW_NAME} = PCore.getConstants();
+    const { CREATE_DETAILS_VIEW_NAME } = PCore.getConstants();
     const latestItem = items[lastItemKey];
     const rootView = latestItem.view;
-    const {context, name: viewName} = rootView.config;
-    const config = {meta: rootView};
+    const { context, name: viewName } = rootView.config;
+    const config = { meta: rootView };
     config.options = {
       context: latestItem.context,
       pageReference: context || this.pConn.getPageReference(),

@@ -1,10 +1,10 @@
-import {ContainerBaseComponent} from './container-base.component.js';
+import { ReferenceComponent } from './reference.component.js';
+import { getComponentFromMap } from '../../mappings/sdk-component-map.js';
+import { ContainerBaseComponent } from './container-base.component.js';
 
 export class AssignmentCardComponent extends ContainerBaseComponent {
-  childrenPConns;
   arMainButtons$;
   arSecondaryButtons$;
-  actionButtonClick;
   props;
   actionButtonsComponent;
 
@@ -18,10 +18,17 @@ export class AssignmentCardComponent extends ContainerBaseComponent {
   }
 
   init() {
+    this.childrenPConns = ReferenceComponent.normalizePConnArray(this.childrenPConns);
     this.componentsManager.onComponentAdded(this);
-    this.reconcileChildren(this.childrenPConns);
 
-    this.actionButtonsComponent = this.componentsManager.create("ActionButtons", [this.arMainButtons$, this.arSecondaryButtons$, this.actionButtonClick]);
+    const reconciledComponents = this.reconcileChildren();
+    this.childrenComponents = reconciledComponents.map((item) => item.component);
+    this.initReconciledComponents(reconciledComponents);
+
+    const actionButtonsComponentClass = getComponentFromMap("ActionButtons");
+    this.actionButtonsComponent = new actionButtonsComponentClass(this.componentsManager, this.arMainButtons$, this.arSecondaryButtons$, this.actionButtonClick);
+    this.actionButtonsComponent.init();
+
     this.sendPropsUpdate();
   }
 
@@ -33,17 +40,22 @@ export class AssignmentCardComponent extends ContainerBaseComponent {
 
   update(pConn, pConnChildren, mainButtons, secondaryButtons) {
     this.pConn = pConn;
+    const oldChildren = this.childrenPConns;
     this.childrenPConns = pConnChildren;
     this.arMainButtons$ = mainButtons;
     this.arSecondaryButtons$ = secondaryButtons;
+    this.childrenPConns = ReferenceComponent.normalizePConnArray(this.childrenPConns);
 
-    this.reconcileChildren(this.childrenPConns);
-    this.sendPropsUpdate();
+    const reconciledComponents = this.reconcileChildren();
+    this.childrenComponents = reconciledComponents.map((item) => item.component);
+    this.initReconciledComponents(reconciledComponents);
+
+    this.sendPropsUpdate()
     this.actionButtonsComponent.update(this.arMainButtons$, this.arSecondaryButtons$, this.actionButtonClick);
   }
 
   onEvent(event) {
-    this.childrenComponents.forEach(component => component.onEvent(event));
+    this.childrenComponents.forEach((component) => {component.onEvent(event);})
   }
 
   sendPropsUpdate() {

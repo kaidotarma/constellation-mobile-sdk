@@ -1,6 +1,7 @@
-import {ReferenceComponent} from './reference.component.js';
-import {Utils} from '../../helpers/utils.js';
-import {BaseComponent} from '../base.component.js';
+import { ReferenceComponent } from './reference.component.js';
+import { getComponentFromMap } from '../../mappings/sdk-component-map.js';
+import { Utils } from '../../helpers/utils.js';
+import { BaseComponent } from '../base.component.js';
 
 const TAG = '[FlowContainerComponent]';
 
@@ -52,6 +53,8 @@ export class FlowContainerComponent extends BaseComponent {
   update(pConn) {
     if (this.pConn !== pConn) {
       this.pConn = pConn;
+      this.jsComponentPConnectData.unsubscribeFn?.();
+      this.jsComponentPConnectData = this.jsComponentPConnect.registerAndSubscribeComponent(this, this.#checkAndUpdate);
       this.#checkAndUpdate();
     }
   }
@@ -88,10 +91,10 @@ export class FlowContainerComponent extends BaseComponent {
       // with a cancel, need to timeout so todo will update correctly
       if (this.cancelPressed) {
         this.cancelPressed = false;
-        setTimeout(() => this.#updateSelf(), 500);
+        setTimeout(() => { this.#updateSelf(); }, 500);
       } else {
         // needs to be called after whole redux events processing for submit is finished (see: TASK-1720886 pulse)
-        setTimeout(() => this.#updateSelf());
+        setTimeout(() => { this.#updateSelf(); })
       }
     }
   }
@@ -122,19 +125,26 @@ export class FlowContainerComponent extends BaseComponent {
 
   #createBanners() {
     const banners = (this.bannerMessages && this.bannerMessages.length > 0)
-      ? [{messages: this.bannerMessages?.map(msg => this.localizedVal(msg.message, 'Messages')), variant: 'urgent'}]
+      ? [{ messages: this.bannerMessages?.map(msg => this.localizedVal(msg.message, 'Messages')), variant: 'urgent' }]
       : [];
+    const alertBannerComponentClass = getComponentFromMap("AlertBanner");
 
-    this.alertBannerComponents = banners.map(b => this.componentsManager.create("AlertBanner", [b.variant, b.messages], true));
+    banners.forEach(banner => {
+      const alertBannerComponent = new alertBannerComponentClass(this.componentsManager, banner.variant, banner.messages);
+      alertBannerComponent.init();
+      this.alertBannerComponents.push(alertBannerComponent);
+    });
   }
 
   #destroyBanners() {
-    this.alertBannerComponents.forEach(banner => banner.destroy());
+    this.alertBannerComponents.forEach(bannerComponent => {
+      bannerComponent.destroy();
+    });
     this.alertBannerComponents = [];
   }
 
   #initContainer() {
-    const flowContainerTarget = `${this.pConn.getContextName()}/${this.pConn.getContainerName()}`;
+    const flowContainerTarget = `${ this.pConn.getContextName()}/${this.pConn.getContainerName()}`;
     const isContainerItemAvailable = PCore.getContainerUtils().getActiveContainerItemName(flowContainerTarget);
     Utils.setOkToInitFlowContainer('false');
     if (!isContainerItemAvailable) {
@@ -155,10 +165,13 @@ export class FlowContainerComponent extends BaseComponent {
 
   #createAndInitAssignmentComponent() {
     this.assignmentPConn = this.#getAssignmentPConn(this.pConn) || this.pConn;
-    this.assignmentComponent = this.componentsManager.create("Assignment", [this.assignmentPConn, this.childrenPConns, this.containerContextKey]);
+    const assignmentComponentClass = getComponentFromMap("Assignment");
+    this.assignmentComponent = new assignmentComponentClass(this.componentsManager, this.assignmentPConn, this.childrenPConns, this.containerContextKey);
+    this.assignmentComponent.init();
   }
 
   #updateSelf() {
+    this.assignmentComponent.update(this.assignmentPConn, this.childrenPConns, this.containerContextKey);
     const caseViewMode = this.assignmentPConn.getValue('context_data.caseViewMode');
     if (caseViewMode === 'perform') {
       if (Utils.okToInitFlowContainer()) {
@@ -195,7 +208,7 @@ export class FlowContainerComponent extends BaseComponent {
     const childCases = this.pConn.getValue(this.pCoreConstants.CASE_INFO.CHILD_ASSIGNMENTS);
     let allAssignments = [];
     if (childCases && childCases.length > 0) {
-      childCases.forEach(({assignments = [], Name, caseTypeID}) => {
+      childCases.forEach(({ assignments = [], Name, caseTypeID }) => {
         const childCaseAssignments = assignments.map((assignment) => ({
           ...assignment,
           caseName: Name,
@@ -222,7 +235,7 @@ export class FlowContainerComponent extends BaseComponent {
     const routingInfo = this.jsComponentPConnect.getComponentProp(this, 'routingInfo');
     // this check in routingInfo, mimic Nebula/Constellation (React) to check and get the internals of the
     // flowContainer and force updates to pConnect/redux
-    if (!routingInfo) {
+    if(!routingInfo) {
       console.error(TAG, "routingInfo is not available.");
       return;
     }
@@ -256,7 +269,7 @@ export class FlowContainerComponent extends BaseComponent {
 
   #getChildPConnConfig(rootView, currentItem, key) {
     const localPConn = this.childrenPConns[0].getPConnect();
-    const config = {meta: rootView};
+    const config = { meta: rootView };
     if (!rootView.config.name) {
       return null;
     }
@@ -286,7 +299,7 @@ export class FlowContainerComponent extends BaseComponent {
 
   #getAssignmentPConn(parentPConnect) {
     const routingInfo = this.jsComponentPConnect.getComponentProp(this, 'routingInfo');
-    const flowContainerInfo = {accessedOrder: routingInfo.accessedOrder, items: routingInfo.items};
+    const flowContainerInfo = { accessedOrder: routingInfo.accessedOrder, items: routingInfo.items};
     const isAssignmentView = this.jsComponentPConnect.getComponentProp(this, 'isAssignmentView') ?? false;
     this.flowContainerHelper.createContainerPConnect(
       flowContainerInfo,

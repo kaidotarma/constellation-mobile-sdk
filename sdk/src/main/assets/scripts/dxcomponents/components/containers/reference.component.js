@@ -30,12 +30,14 @@ export class ReferenceComponent {
   }
 
   static _createFullReferencedViewFromRef(inPConn) {
+
     if (inPConn.getComponentName() !== 'reference') {
       throw new Error(`inPConn is not a reference. ${inPConn.getComponentName()}`);
     }
 
     const theResolvedConfigProps = inPConn.resolveConfigProps(inPConn.getConfigProps());
-    const referenceConfig = {...inPConn.getComponentConfig()} || {};
+
+    const referenceConfig = { ...inPConn.getComponentConfig() } || {};
 
     // name will not be passed to referenced view (but type and visibility will be passed)
     delete referenceConfig?.name;
@@ -54,9 +56,9 @@ export class ReferenceComponent {
         referenceContext: inPConn.getPageReference()
       }
     };
-    const context = theResolvedConfigProps.context
+
     const viewComponent = inPConn.createComponent(viewObject, null, null, {
-      pageReference: context && context.startsWith('@CLASS') ? '' : context
+      pageReference: theResolvedConfigProps.context
     });
 
     const newCompPConnect = viewComponent.getPConnect();
@@ -71,12 +73,11 @@ export class ReferenceComponent {
   }
 
   /**
-   Show label by default if 'label' is set but 'showLabel' is missing
+    Show label by default if 'label' is set but 'showLabel' is missing
    */
   static _setShowLabelIfMissing(referenceConfig) {
-    const inheritedProps = referenceConfig?.inheritedProps ?? [];
-    if (inheritedProps.some(prop => prop.prop === 'label') &&
-      !inheritedProps.some(prop => prop.prop === 'showLabel')) {
+    if (referenceConfig.inheritedProps?.find(prop => {return prop.prop === 'label'}) !== undefined &&
+      referenceConfig.inheritedProps?.find(prop => {return prop.prop === 'showLabel'}) === undefined) {
 
       referenceConfig.inheritedProps.push(
         {
