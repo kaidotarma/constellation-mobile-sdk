@@ -25,8 +25,10 @@ internal class WebViewAssetInterceptor(
         view: WebView,
         request: WebResourceRequest
     ): WebResourceResponse? {
-        val requestUrl = request.url.toString()
+        var requestUrl = request.url.toString()
         Log.d("WebViewAssetInterceptor","requestUrl:$requestUrl")
+        requestUrl = requestUrl.replace("/application/v2","")
+        Log.d("WebViewAssetInterceptor","requestUrl changed:$requestUrl")
         val url = when {
             requestUrl == pegaUrl -> "$ASSETS_URL/$INDEX_HTML_PATH"
             requestUrl.contains(baseUrlWithAssetsPath) -> requestUrl.replace(baseUrl, ASSETS_URL)
