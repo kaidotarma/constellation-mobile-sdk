@@ -84,3 +84,10 @@ release/
 
 **/cdn/*
 !**/cdn/.gitkeep
+
+.gradle
+.idea
+build
+.kotlin
+
+local.properties
