@@ -32,9 +32,8 @@ export class FieldBaseComponent extends BaseComponent {
     }
 
     destroy() {
-        super.destroy();
         this.jsComponentPConnectData.unsubscribeFn?.();
-        this.componentsManager.onComponentRemoved(this);
+        super.destroy();
     }
 
     update(pConn) {

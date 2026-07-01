@@ -13,7 +13,7 @@ struct AssignmentCardComponentView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     VStack {
-                        ForEach(state.component.children, id: \.context.id) { child in
+                        ForEach(state.component.children.filter { !($0 is ActionButtonsComponent) }, id: \.context.id) { child in
                             child.renderView()
                         }
                     }
@@ -24,7 +24,7 @@ struct AssignmentCardComponentView: View {
                 .background(Color(red: 0.8, green: 0.85, blue: 0.9))
                 .cornerRadius(10)
             }
-            if let buttons = state.component.actionButtons {
+            if let buttons = state.component.children.first(where: { $0 is ActionButtonsComponent }) as? ActionButtonsComponent {
                 buttons.renderView()
             }
         }

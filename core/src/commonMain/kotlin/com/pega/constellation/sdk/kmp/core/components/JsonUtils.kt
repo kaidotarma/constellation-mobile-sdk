@@ -13,6 +13,7 @@ fun JsonArray.getJsonObject(index: Int) = get(index).jsonObject
 fun JsonArray.getString(index: Int) = get(index).jsonPrimitive.content
 
 fun JsonObject.getJSONArray(key: String) = getValue(key).jsonArray
+fun JsonObject.optJSONArray(key: String) = get(key)?.jsonArray
 fun JsonObject.getString(key: String) = getValue(key).jsonPrimitive.content
 fun JsonObject.optString(key: String) = optString(key, default = "")
 fun JsonObject.optString(key: String, default: String) = get(key)?.jsonPrimitive?.content ?: default

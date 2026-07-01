@@ -5,11 +5,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.pega.constellation.sdk.kmp.core.components.containers.RootContainerComponent
+import com.pega.constellation.sdk.kmp.core.components.containers.ModalViewContainerComponent
+import com.pega.constellation.sdk.kmp.core.components.containers.ViewContainerComponent
 import com.pega.constellation.sdk.kmp.core.components.widgets.Dialog
 import com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form.Alert
 import com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form.Confirm
@@ -23,8 +25,8 @@ class RootContainerRenderer : ComponentRenderer<RootContainerComponent> {
     @Composable
     override fun RootContainerComponent.Render() {
         Box(Modifier.clearFocusOnTap()) {
-            viewContainer?.Render()
-            modalViewContainer?.Render()
+            children.filterIsInstance<ViewContainerComponent>().forEach { it.Render() }
+            children.filterIsInstance<ModalViewContainerComponent>().forEach { it.Render() }
             Snackbar(
                 messages = httpMessages,
                 onSnackbarClose = { clearMessages() },

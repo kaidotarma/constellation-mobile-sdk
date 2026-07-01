@@ -1,19 +1,21 @@
 import { Utils } from "../../../helpers/utils.js";
-import { BaseComponent } from "../../base.component.js";
+import { ContainerBaseComponent } from "../container-base.component.js";
 
 const TAG = "[SimpleTableComponent]";
 
-export class SimpleTableComponent extends BaseComponent {
-    jsComponentPConnectData = {};
-    childComponent;
-    props = {
-        child: undefined,
-    };
-
+export class SimpleTableComponent extends ContainerBaseComponent {
     constructor(componentsManager, pConn) {
         super(componentsManager, pConn);
         this.type = "SimpleTable";
         this.utils = new Utils();
+    }
+
+    get childComponent() {
+        return this.childrenComponents[0];
+    }
+
+    set childComponent(component) {
+        this.childrenComponents = component ? [component] : [];
     }
 
     init() {
@@ -23,15 +25,6 @@ export class SimpleTableComponent extends BaseComponent {
         );
         this.componentsManager.onComponentAdded(this);
         this.checkAndUpdate();
-    }
-
-    destroy() {
-        super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.childComponent?.destroy?.();
-        this.childComponent = null
-        this.#sendPropsUpdate();
-        this.componentsManager.onComponentRemoved(this);
     }
 
     update(pConn) {
@@ -96,7 +89,7 @@ export class SimpleTableComponent extends BaseComponent {
 
     #sendPropsUpdate() {
         this.props = {
-            child: this.childComponent?.compId ?? "-1",
+            children: this.getChildrenProps(),
         };
         this.componentsManager.onComponentPropsUpdate(this);
     }

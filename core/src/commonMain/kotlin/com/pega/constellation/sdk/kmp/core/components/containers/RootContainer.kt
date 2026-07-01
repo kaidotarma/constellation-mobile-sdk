@@ -3,23 +3,17 @@ package com.pega.constellation.sdk.kmp.core.components.containers
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.pega.constellation.sdk.kmp.core.api.BaseComponent
 import com.pega.constellation.sdk.kmp.core.api.ComponentContext
-import com.pega.constellation.sdk.kmp.core.api.ComponentId
-import com.pega.constellation.sdk.kmp.core.components.getJSONArray
 import com.pega.constellation.sdk.kmp.core.components.getJsonObject
 import com.pega.constellation.sdk.kmp.core.components.getString
+import com.pega.constellation.sdk.kmp.core.components.optJSONArray
 import com.pega.constellation.sdk.kmp.core.components.widgets.Dialog
 import kotlinx.serialization.json.JsonObject
 
-class RootContainerComponent(context: ComponentContext) : BaseComponent(context) {
-    var viewContainer: ViewContainerComponent? by mutableStateOf(null)
-        private set
+class RootContainerComponent(context: ComponentContext) : ContainerComponent(context) {
     var httpMessages: List<String> by mutableStateOf(emptyList())
         private set
     var dialogConfig: Dialog.Config? by mutableStateOf(null)
-        private set
-    var modalViewContainer: ModalViewContainerComponent? by mutableStateOf(null)
         private set
 
     fun presentDialog(config: Dialog.Config) {
@@ -33,18 +27,14 @@ class RootContainerComponent(context: ComponentContext) : BaseComponent(context)
     }
 
     override fun applyProps(props: JsonObject) {
-        val viewContainerId = ComponentId(props.getString("viewContainer").toInt())
-        viewContainer = adoptChildAndGetTyped(viewContainerId)
-        val modalViewContainerId = ComponentId(props.getString("modalViewContainer").toInt())
-        modalViewContainer = adoptChildAndGetTyped(modalViewContainerId)
-        val httpMessagesArray = props.getJSONArray("httpMessages")
-        httpMessages = httpMessagesArray.mapWithIndex {
+        super.applyProps(props)
+        httpMessages = props.optJSONArray("httpMessages")?.mapWithIndex {
             val httpMessage = getJsonObject(it)
             val type = httpMessage.getString("type")
             val message = httpMessage.getString("message")
             val prefix = if (type == "error") "Http error: " else ""
             prefix + message
-        }
+        } ?: emptyList()
     }
 
     fun clearMessages() {

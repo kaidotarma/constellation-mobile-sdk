@@ -21,7 +21,6 @@ export class ViewComponent extends ContainerBaseComponent {
     SUPPORTED_TEMPLATES = [...this.SUPPORTED_FORM_TEMPLATES, "SimpleTable", "DataReference", "Details"];
     NO_HEADER_TEMPLATES = ['Details', 'SimpleTable', 'DataReference'];
 
-    jsComponentPConnectData = {};
     props = {
         children: [],
         visible: true,
@@ -34,15 +33,6 @@ export class ViewComponent extends ContainerBaseComponent {
             this.jsComponentPConnect.registerAndSubscribeComponent(this, this.#checkAndUpdate);
         this.componentsManager.onComponentAdded(this);
         this.#checkAndUpdate();
-    }
-
-    destroy() {
-        super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.destroyChildren();
-        this.props.children = [];
-        this.componentsManager.onComponentPropsUpdate(this);
-        this.componentsManager.onComponentRemoved(this);
     }
 
     update(pConn) {
@@ -101,7 +91,7 @@ export class ViewComponent extends ContainerBaseComponent {
             this.reconcileChildren();
         }
 
-        this.props.children = this.getChildrenComponentsIds();
+        this.props.children = this.getChildrenProps();
         this.componentsManager.onComponentPropsUpdate(this);
     }
 

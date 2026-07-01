@@ -1,7 +1,6 @@
 import { ContainerBaseComponent } from "./container-base.component.js";
 
 export class RegionComponent extends ContainerBaseComponent {
-    jsComponentPConnectData = {};
     props = {
         children: [],
     };
@@ -14,15 +13,6 @@ export class RegionComponent extends ContainerBaseComponent {
         );
         this.componentsManager.onComponentAdded(this);
         this.#updateSelf();
-    }
-
-    destroy() {
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        super.destroy();
-        this.destroyChildren();
-        this.props.children = [];
-        this.componentsManager.onComponentPropsUpdate(this);
-        this.componentsManager.onComponentRemoved(this);
     }
 
     update(pConn) {
@@ -51,7 +41,7 @@ export class RegionComponent extends ContainerBaseComponent {
 
     #updateSelf() {
         this.reconcileChildren();
-        this.props.children = this.getChildrenComponentsIds();
+        this.props.children = this.getChildrenProps();
         this.componentsManager.onComponentPropsUpdate(this);
     }
 

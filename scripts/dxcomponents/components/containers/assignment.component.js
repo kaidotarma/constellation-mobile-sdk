@@ -1,16 +1,14 @@
 import { ReferenceComponent } from "./reference.component.js";
-import { BaseComponent } from "../base.component.js";
+import { ContainerBaseComponent } from "./container-base.component.js";
 
 const TAG = "[AssignmentComponent]";
 
-export class AssignmentComponent extends BaseComponent {
+export class AssignmentComponent extends ContainerBaseComponent {
     childrenPConns;
-    assignmentCardComponent;
     itemKey$;
 
     jsComponentPConnectData = {};
     configProps$;
-    props;
 
     newPConn;
     containerName$;
@@ -44,6 +42,14 @@ export class AssignmentComponent extends BaseComponent {
     localeCategory = "Assignment";
     localeReference;
 
+    get assignmentCardComponent() {
+        return this.childrenComponents[0];
+    }
+
+    set assignmentCardComponent(component) {
+        this.childrenComponents[0] = component;
+    }
+
     constructor(componentsManager, pConn, childrenPConns, itemKey) {
         super(componentsManager, pConn);
 
@@ -70,18 +76,11 @@ export class AssignmentComponent extends BaseComponent {
             .getName()}`.toUpperCase();
     }
 
-    destroy() {
-        super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.assignmentCardComponent?.destroy();
-        this.componentsManager.onComponentRemoved(this);
-    }
-
-    update(pConn, pConnChildren, itemKey) {
+    update(pConn, childrenPConns, itemKey) {
         if (this.pConn !== pConn) {
             this.pConn = pConn;
         }
-        this.childrenPConns = pConnChildren;
+        this.childrenPConns = childrenPConns;
         this.itemKey$ = itemKey;
         if (this.bInitialized) {
             this.updateChanges();
@@ -99,12 +98,8 @@ export class AssignmentComponent extends BaseComponent {
     }
 
     sendPropsUpdate() {
-        let children = [];
-        if (this.assignmentCardComponent != null) {
-            children = [this.assignmentCardComponent.compId];
-        }
         this.props = {
-            children: children,
+            children: this.getChildrenProps(),
             loading: this.loading,
         };
         this.componentsManager.onComponentPropsUpdate(this);
@@ -130,6 +125,7 @@ export class AssignmentComponent extends BaseComponent {
         if (this.assignmentCardComponent) {
             this.assignmentCardComponent.update(...assignmentCardArgs);
         } else {
+            this.destroyChildren();
             this.assignmentCardComponent = this.componentsManager.create("AssignmentCard", assignmentCardArgs);
             this.assignmentCardComponent.init();
         }

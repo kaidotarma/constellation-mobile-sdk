@@ -9,7 +9,7 @@ struct SimpleTableComponentView: View {
     }
 
     var body: some View {
-        if let child = state.component.child {
+        if let child = state.component.children.first {
             child.renderView()
         }
     }

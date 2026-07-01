@@ -4,11 +4,6 @@ import { ContainerBaseComponent } from "./container-base.component.js";
 const TAG = "[ModalViewContainerComponent]";
 
 export class ModalViewContainerComponent extends ContainerBaseComponent {
-
-    jsComponentPConnectData = {};
-    props = {
-        children: [],
-    };
     alertBannerComponents = [];
     childrenPConns= [];
     stateProps;
@@ -37,13 +32,8 @@ export class ModalViewContainerComponent extends ContainerBaseComponent {
     }
 
     destroy() {
-        super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.destroyChildren();
-        this.props.children = [];
-        this.componentsManager.onComponentPropsUpdate(this);
-        this.componentsManager.onComponentRemoved(this);
         this.#destroyBanners();
+        super.destroy();
     }
 
     update(pConn) {
@@ -54,6 +44,7 @@ export class ModalViewContainerComponent extends ContainerBaseComponent {
     }
 
     onEvent(event) {
+        super.onEvent(event);
         if (event.type === "ModalViewContainerEvent") {
             switch (event.eventData?.type) {
                 case "cancel":
@@ -65,11 +56,7 @@ export class ModalViewContainerComponent extends ContainerBaseComponent {
                 default:
                     console.warn(TAG, "Unexpected event: ", event.eventData?.type);
             }
-            return;
         }
-        this.childrenComponents.forEach((component) => {
-            component.onEvent(event);
-        });
     }
 
     #checkAndUpdate() {
@@ -156,19 +143,25 @@ export class ModalViewContainerComponent extends ContainerBaseComponent {
     }
 
     #sendPropsUpdate() {
+        const bannerChildren = this.alertBannerComponents.map((banner) => ({
+            id: banner.compId,
+            type: banner.type,
+        }));
         this.props = {
             visible: this.showModal,
             title: this.title,
-            children: this.getChildrenComponentsIds(),
+            children: [...this.getChildrenProps(), ...bannerChildren],
             cancelLabel: this.localizedVal('Cancel', this.localeCategory),
             submitLabel: this.localizedVal('Submit', this.localeCategory),
-            alertBanners: this.alertBannerComponents.map((banner) => banner.compId),
         };
         this.componentsManager.onComponentPropsUpdate(this);
     }
 
     #hideModal() {
         this.showModal = false;
+        this.destroyChildren();
+        this.#destroyBanners();
+        this.componentsManager.onComponentPropsUpdate(this);
         this.oCaseInfo = {};
     }
 

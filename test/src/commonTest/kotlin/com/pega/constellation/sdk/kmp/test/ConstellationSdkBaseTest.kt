@@ -6,8 +6,10 @@ import com.pega.constellation.sdk.kmp.core.ConstellationSdkConfig
 import com.pega.constellation.sdk.kmp.core.ConstellationSdkEngine
 import com.pega.constellation.sdk.kmp.core.components.children
 import com.pega.constellation.sdk.kmp.core.components.containers.AssignmentCardComponent
+import com.pega.constellation.sdk.kmp.core.components.containers.AssignmentComponent
 import com.pega.constellation.sdk.kmp.core.components.containers.DefaultFormComponent
 import com.pega.constellation.sdk.kmp.core.components.containers.FlowContainerComponent
+import com.pega.constellation.sdk.kmp.core.components.containers.ModalViewContainerComponent
 import com.pega.constellation.sdk.kmp.core.components.containers.OneColumnComponent
 import com.pega.constellation.sdk.kmp.core.components.containers.RegionComponent
 import com.pega.constellation.sdk.kmp.core.components.containers.RootContainerComponent
@@ -44,7 +46,7 @@ abstract class ConstellationSdkBaseTest {
     @Test
     fun test_initialization_with_invalid_url() = runTest {
         val invalidConfig = config.copy(pegaUrl = "https://invalid.url")
-        val invalidSdk = ConstellationSdk.create(invalidConfig,requireNotNull(engine))
+        val invalidSdk = ConstellationSdk.create(invalidConfig, requireNotNull(engine))
         assertEquals(State.Initial, invalidSdk.state.value)
         invalidSdk.createCase(CASE_CLASS)
         invalidSdk.assertState<State.Loading>()
@@ -86,7 +88,10 @@ abstract class ConstellationSdkBaseTest {
     fun test_get_parent() = runTest {
         sdk.createCase(CASE_CLASS)
         val root = sdk.assertState<State.Ready>().root
-        assertEquals(root, root.modalViewContainer?.getParent())
+        assertEquals(
+            root,
+            root.children.filterIsInstance<ModalViewContainerComponent>()[0].getParent()
+        )
     }
 
     @Test
@@ -109,6 +114,7 @@ abstract class ConstellationSdkBaseTest {
     companion object {
         private const val PEGA_URL = "https://insert-url-here.example/prweb"
         protected const val CASE_CLASS = "DIXL-MediaCo-Work-SDKTesting"
+
         @JvmStatic
         protected val EXPECTED_COMPONENT_STRUCTURE = """
                 RootContainer#1
@@ -139,6 +145,7 @@ abstract class ConstellationSdkBaseTest {
                 -----------------Checkbox#27(parent=#26)
                 -----------------TextArea#28(parent=#26)
                 --------------Email#24(parent=#15)
+                -----------ActionButtons#29(parent=#12)
                 
                 """.trimIndent()
 
@@ -179,8 +186,8 @@ abstract class ConstellationSdkBaseTest {
             val region2 = view2.children[0] as RegionComponent
             val view3 = region2.children[0] as ViewComponent
             val flowContainer = view3.children[0] as FlowContainerComponent
-            val assignment = flowContainer.assignment
-            val assignmentCard = assignment?.children[0] as AssignmentCardComponent
+            val assignment = flowContainer.children.filterIsInstance<AssignmentComponent>()[0]
+            val assignmentCard = assignment.children[0] as AssignmentCardComponent
             val view4 = assignmentCard.children[0] as ViewComponent
             return view4.children[0] as DefaultFormComponent
         }

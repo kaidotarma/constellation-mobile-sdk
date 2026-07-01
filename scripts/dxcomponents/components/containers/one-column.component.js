@@ -1,7 +1,6 @@
 import { ContainerBaseComponent } from "./container-base.component.js";
 
 export class OneColumnComponent extends ContainerBaseComponent {
-    props;
 
     constructor(componentsManager, pConn) {
         super(componentsManager, pConn);
@@ -15,12 +14,9 @@ export class OneColumnComponent extends ContainerBaseComponent {
     }
 
     destroy() {
-        super.destroy();
         // prevents sending fields from previous steps on next submit see: TASK-1776419 pulse
         PCore.getContextTreeManager().removeContextTreeNode(this.pConn.getContextName());
-        this.destroyChildren();
-        this.sendPropsUpdate();
-        this.componentsManager.onComponentRemoved(this);
+        super.destroy();
     }
 
     update(pConn) {
@@ -31,7 +27,7 @@ export class OneColumnComponent extends ContainerBaseComponent {
 
     sendPropsUpdate() {
         this.props = {
-            children: this.getChildrenComponentsIds(),
+            children: this.getChildrenProps(),
         };
         this.componentsManager.onComponentPropsUpdate(this);
     }

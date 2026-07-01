@@ -2,7 +2,6 @@ import { ContainerBaseComponent } from "../container-base.component.js";
 
 export class DetailsTemplateBase extends ContainerBaseComponent {
     childrenMetadataOld;
-    jsComponentPConnectData = {};
 
     constructor(componentsManager, pConn) {
         super(componentsManager, pConn);
@@ -15,15 +14,6 @@ export class DetailsTemplateBase extends ContainerBaseComponent {
         );
         this.componentsManager.onComponentAdded(this);
         this.checkAndUpdate();
-    }
-
-    destroy() {
-        super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.destroyChildren();
-        this.props.children = [];
-        this.componentsManager.onComponentPropsUpdate(this);
-        this.componentsManager.onComponentRemoved(this);
     }
 
     hasRawMetadataChanged() {

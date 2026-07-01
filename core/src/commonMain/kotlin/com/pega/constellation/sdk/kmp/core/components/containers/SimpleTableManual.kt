@@ -3,10 +3,9 @@ package com.pega.constellation.sdk.kmp.core.components.containers
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.pega.constellation.sdk.kmp.core.api.BaseComponent
-import com.pega.constellation.sdk.kmp.core.api.Component
 import com.pega.constellation.sdk.kmp.core.api.ComponentContext
 import com.pega.constellation.sdk.kmp.core.api.ComponentEvent
+import com.pega.constellation.sdk.kmp.core.api.Component
 import com.pega.constellation.sdk.kmp.core.api.ComponentId
 import com.pega.constellation.sdk.kmp.core.api.HideableComponent
 import com.pega.constellation.sdk.kmp.core.components.getBoolean
@@ -15,7 +14,7 @@ import com.pega.constellation.sdk.kmp.core.components.getString
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
 
-class SimpleTableManualComponent(context: ComponentContext) : BaseComponent(context), HideableComponent {
+class SimpleTableManualComponent(context: ComponentContext) : ContainerComponent(context), HideableComponent {
     override var visible by mutableStateOf(false)
         private set
     var label: String by mutableStateOf("")
@@ -34,6 +33,7 @@ class SimpleTableManualComponent(context: ComponentContext) : BaseComponent(cont
         private set
 
     override fun applyProps(props: JsonObject) {
+        super.applyProps(props)
         visible = props.getBoolean("visible")
         label = props.getString("label")
         displayMode = DisplayMode.valueOf(props.getString("displayMode"))
@@ -54,9 +54,9 @@ class SimpleTableManualComponent(context: ComponentContext) : BaseComponent(cont
             val rowJsonObject = jsonElement.jsonObject
             val componentIds = rowJsonObject.getJSONArray("cellComponentIds")
             val ids = componentIds.mapWithIndex { getString(it).toInt() }
-            val cellComponents = ids.mapNotNull { adoptChildAndGet(ComponentId(it)) }
+            val childrenById = children.associateBy { it.context.id }
             Row(
-                cells = cellComponents.map { Cell(it) },
+                cells = ids.mapNotNull { childrenById[ComponentId(it)] },
                 showEditButton = rowJsonObject.getBoolean("showEditButton"),
                 showDeleteButton = rowJsonObject.getBoolean("showDeleteButton")
             )
@@ -109,12 +109,10 @@ class SimpleTableManualComponent(context: ComponentContext) : BaseComponent(cont
         )
 
     data class Row(
-        val cells: List<Cell>,
+        val cells: List<Component>,
         val showEditButton: Boolean,
         val showDeleteButton: Boolean
     )
-
-    data class Cell(val component: Component)
 
     enum class DisplayMode {
         DISPLAY_ONLY, EDITABLE_IN_MODAL, EDITABLE_IN_ROW

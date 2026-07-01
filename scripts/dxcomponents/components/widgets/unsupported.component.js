@@ -22,12 +22,6 @@ export class UnsupportedComponent extends BaseComponent {
         this.updateSelf();
     }
 
-    destroy() {
-        super.destroy();
-        console.log(TAG, `Unsupported component ${this.type} for property ${this.propName} destroyed`);
-        this.componentsManager.onComponentRemoved(this);
-    }
-
     update(pConn) {
         if (this.pConn !== pConn) {
             this.pConn = pConn;

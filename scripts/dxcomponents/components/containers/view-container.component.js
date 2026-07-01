@@ -1,15 +1,10 @@
 import { ReferenceComponent } from "./reference.component.js";
 import { Utils } from "../../helpers/utils.js";
-import { BaseComponent } from "../base.component.js";
+import { ContainerBaseComponent } from "./container-base.component.js";
 
 const TAG = "[ViewContainerComponent]";
 
-export class ViewContainerComponent extends BaseComponent {
-    jsComponentPConnectData = {};
-    childComponent;
-    props = {
-        children: [],
-    };
+export class ViewContainerComponent extends ContainerBaseComponent {
 
     init() {
         this.jsComponentPConnectData = this.jsComponentPConnect.registerAndSubscribeComponent(
@@ -43,15 +38,6 @@ export class ViewContainerComponent extends BaseComponent {
         // however, need jsComponentPConnect to be initialized with currentProps for future updates, so calling shouldComponentUpdate directly
         // without checking to update here in init, will initialize and this is correct
         this.jsComponentPConnect.shouldComponentUpdate(this);
-    }
-
-    destroy() {
-        super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.childComponent?.destroy?.();
-        this.props.children = [];
-        this.componentsManager.onComponentPropsUpdate(this);
-        this.componentsManager.onComponentRemoved(this);
     }
 
     update(pConn) {
@@ -92,10 +78,9 @@ export class ViewContainerComponent extends BaseComponent {
                     return;
                 }
                 const viewPConn = ReferenceComponent.normalizePConn(newCompPConn);
-                this.childComponent?.destroy?.();
-                this.childComponent = this.componentsManager.create(viewPConn.meta.type, [viewPConn]);
-                this.childComponent.init();
-                this.props.children = [this.childComponent.compId];
+
+                this.reconcileChildren([{ getPConnect: () => viewPConn}]);
+                this.props.children = this.getChildrenProps();
                 this.componentsManager.onComponentPropsUpdate(this);
             }
         }

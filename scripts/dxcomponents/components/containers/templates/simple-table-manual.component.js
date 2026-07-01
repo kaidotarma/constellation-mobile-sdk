@@ -1,4 +1,4 @@
-import { BaseComponent } from "../../base.component.js";
+import { ContainerBaseComponent } from "../container-base.component.js";
 import {
     buildFieldsForTable,
     evaluateAllowRowAction,
@@ -6,9 +6,7 @@ import {
     getReferenceList
 } from "./template-utils.js";
 
-export class SimpleTableManualComponent extends BaseComponent {
-    jsComponentPConnectData = {};
-
+export class SimpleTableManualComponent extends ContainerBaseComponent {
     DISPLAY_ONLY = 'DISPLAY_ONLY';
     EDITABLE_IN_MODAL = 'EDITABLE_IN_MODAL';
     EDITABLE_IN_ROW = 'EDITABLE_IN_ROW';
@@ -21,6 +19,7 @@ export class SimpleTableManualComponent extends BaseComponent {
         allowReorderRows: true,
         addButtonLabel: "+ Add",
         columnLabels: [],
+        children: [],
         rows: [],
     }
 
@@ -52,17 +51,9 @@ export class SimpleTableManualComponent extends BaseComponent {
     }
 
     destroy() {
-        super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.editableRows.forEach(row => {
-            row.cells.forEach(cell => {
-                cell.component.destroy();
-            });
-        })
         this.editableRows = [];
         this.props.rows = [];
-        this.componentsManager.onComponentPropsUpdate(this);
-        this.componentsManager.onComponentRemoved(this);
+        super.destroy();
     }
 
     update(pConn) {
@@ -146,12 +137,13 @@ export class SimpleTableManualComponent extends BaseComponent {
         if ((!this.#listsEqual(this.prevReferenceList, this.referenceList))) {
             this.#buildRows(rawFields);
         }
+        this.props.children = this.getChildrenProps();
         this.props.rows = this.editableRows.map((row, rowIndex) => {
             const allowDelete = conditions.allowDeleteRow && evaluateAllowRowAction(allowRowDeleteExpression, this.referenceList[rowIndex])
             const showEditButton = editableMode && this.allowEditingInModal && this.referenceList[rowIndex].allowEdit
             const showDeleteButton = editableMode && allowDelete
             return {
-                cellComponentIds: row.cells.map((cell) => cell.component.compId),
+                cellComponentIds: row.cellComponentIds,
                 showEditButton: showEditButton,
                 showDeleteButton:  showDeleteButton
             }
@@ -186,12 +178,7 @@ export class SimpleTableManualComponent extends BaseComponent {
             }
             return;
         }
-
-        this.editableRows?.forEach((row) => {
-            row.cells.forEach(cell => {
-                cell.component.onEvent(event);
-            })
-        });
+        super.onEvent(event)
     }
 
     #checkIfAllowActionsOrRowEditingExist(newflagobject) {
@@ -215,49 +202,69 @@ export class SimpleTableManualComponent extends BaseComponent {
 
     #buildRows(rawFields) {
         const context = this.pConn.getContextName();
+        const visibleFields = rawFields?.filter((item) => !item?.config?.hide) ?? [];
+        const oldChildrenById = new Map(this.childrenComponents.map((component) => [component.compId, component]));
         const newEditableRows = [];
+        const newChildrenComponents = [];
         this.referenceList.forEach((element, rowIndex) => {
             const editableRow = this.editableRows[rowIndex];
-            const newEditableCells = [];
-            rawFields?.forEach((item, cellIndex) => {
-                if (!item?.config?.hide) {
-                    item = {
-                        ...item,
-                        config: {
-                            ...item.config,
-                            label: '',
-                            displayMode: this.readOnlyMode || this.allowEditingInModal || !element.allowEdit ? 'DISPLAY_ONLY' : undefined
-                        }
-                    };
-                    const referenceListData = getReferenceList(this.pConn);
-                    const pageReferenceValue = referenceListData.startsWith('D_')
-                        ? `${referenceListData}[${rowIndex}]`
-                        : `${this.pConn.getPageReference()}${referenceListData}[${rowIndex}]`;
-                    const config = {
-                        meta: item,
-                        options: {
-                            context,
-                            pageReference: pageReferenceValue,
-                            referenceList: referenceListData,
-                            hasForm: true
-                        }
-                    };
-                    const cellPConn = PCore.createPConnect(config).getPConnect();
-                    const oldComponent = editableRow?.cells?.[cellIndex]?.component;
-                    let newComponent;
-                    if (oldComponent) {
-                        oldComponent.update(cellPConn);
-                        newComponent = oldComponent;
-                    } else {
-                        newComponent = this.componentsManager.create(cellPConn.meta.type, [cellPConn]);
-                        newComponent.init();
-                    }
-                    newEditableCells.push({ component: newComponent })
-                }
-            });
-            newEditableRows.push({ cells: newEditableCells});
+            const { row, children } = this.#syncRowCells(
+                editableRow,
+                visibleFields,
+                element,
+                rowIndex,
+                context,
+                oldChildrenById
+            );
+            newEditableRows.push(row);
+            newChildrenComponents.push(...children);
         });
+        this.childrenComponents
+            .filter((component) => !newChildrenComponents.includes(component))
+            .forEach((component) => component.destroy());
         this.editableRows = newEditableRows;
+        this.childrenComponents = newChildrenComponents;
+    }
+
+    #syncRowCells(editableRow, visibleFields, element, rowIndex, context, oldChildrenById) {
+        const referenceListData = getReferenceList(this.pConn);
+        const pageReferenceValue = referenceListData.startsWith('D_')
+            ? `${referenceListData}[${rowIndex}]`
+            : `${this.pConn.getPageReference()}${referenceListData}[${rowIndex}]`;
+        const cellComponentIds = [];
+        const children = [];
+
+        visibleFields.forEach((item, cellIndex) => {
+            const cellMeta = {
+                ...item,
+                config: {
+                    ...item.config,
+                    label: '',
+                    displayMode: this.readOnlyMode || this.allowEditingInModal || !element.allowEdit ? 'DISPLAY_ONLY' : undefined
+                }
+            };
+            const cellPConn = PCore.createPConnect({
+                meta: cellMeta,
+                options: {
+                    context,
+                    pageReference: pageReferenceValue,
+                    referenceList: referenceListData,
+                    hasForm: true
+                }
+            }).getPConnect();
+
+            const oldComponentId = editableRow?.cellComponentIds?.[cellIndex];
+            const oldComponent = oldComponentId ? oldChildrenById.get(oldComponentId) : undefined;
+            const newComponent = this.reuseOrCreateChild(oldComponent, cellPConn);
+
+            children.push(newComponent);
+            cellComponentIds.push(newComponent.compId);
+        });
+
+        return {
+            row: { cellComponentIds },
+            children,
+        };
     }
 
     #addSimpleTableRow() {

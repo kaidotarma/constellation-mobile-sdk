@@ -60,11 +60,6 @@ abstract class BaseComponent(
             it.parentId = context.id
         }
 
-
-    @Suppress("UNCHECKED_CAST")
-    internal fun <T: Component> adoptChildAndGetTyped(childId: ComponentId) =
-        adoptChildAndGet(childId) as? T
-
     protected fun <T> JsonArray.mapWithIndex(transform: JsonArray.(Int) -> T) =
         List(size) { this.transform(it) }
 }
@@ -72,4 +67,3 @@ abstract class BaseComponent(
 interface HideableComponent {
     val visible: Boolean
 }
-

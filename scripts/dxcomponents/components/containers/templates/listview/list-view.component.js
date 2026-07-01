@@ -48,11 +48,6 @@ export class ListViewComponent extends BaseComponent {
         this.#updateSelf();
     }
 
-    destroy() {
-        super.destroy();
-        this.componentsManager.onComponentRemoved(this);
-    }
-
     update(pConn, payload) {
         const pConnChanged = this.pConn !== pConn;
         if (!pConnChanged && this.payload === payload) {
@@ -164,8 +159,14 @@ export class ListViewComponent extends BaseComponent {
             cosmosTableRef: this.cosmosTableRef,
             selectionMode: this.selectionMode,
         }).then((response) => {
+            if (!this.alive) {
+                return;
+            }
             this.listContext = response;
             this.#getListData(() => {
+                if (!this.alive) {
+                    return;
+                }
                 this.#updateSelection();
                 this.#sendPropsUpdate();
             });
@@ -282,6 +283,9 @@ export class ListViewComponent extends BaseComponent {
 
             Promise.all([fieldsMetaDataPromise, workListDataPromise])
                 .then(([fieldsMetaData, workListData]) => {
+                    if (!this.alive) {
+                        return;
+                    }
                     this.fields$ = this.configProps$.presets[0].children[0].children;
                     // this is an unresovled version of this.fields$, need unresolved, so can get the property reference
                     const columnFields = componentConfig.presets[0].children[0].children;

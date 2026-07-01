@@ -7,9 +7,9 @@ struct RootContainer: View {
     init(_ component: RootContainerComponent) {
         state = ObservableComponent(component: component)
     }
-    
+
     var body: some View {
-        if let container = state.component.viewContainer {
+        if let container = state.component.children.first(where: { $0 is ViewContainerComponent }) as? ViewContainerComponent {
             container.renderView()
                 .dialog(
                     config: {

@@ -4,7 +4,6 @@ import { ReferenceComponent } from "./reference.component.js";
 const TAG = "[GroupComponent]";
 
 export class GroupComponent extends ContainerBaseComponent {
-    jsComponentPConnectData = {};
     props = {
         visible: true,
         children: [],
@@ -26,14 +25,6 @@ export class GroupComponent extends ContainerBaseComponent {
         );
         this.componentsManager.onComponentAdded(this);
         this.#checkAndUpdate();
-    }
-
-    destroy() {
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.destroyChildren();
-        this.props.children = [];
-        this.componentsManager.onComponentPropsUpdate(this);
-        this.componentsManager.onComponentRemoved(this);
     }
 
     update(pConn) {
@@ -71,7 +62,7 @@ export class GroupComponent extends ContainerBaseComponent {
             });
         }
         this.reconcileChildren();
-        this.props.children = this.getChildrenComponentsIds();
+        this.props.children = this.getChildrenProps();
         this.componentsManager.onComponentPropsUpdate(this);
     }
 }

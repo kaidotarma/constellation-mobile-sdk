@@ -1,19 +1,34 @@
 import { ReferenceComponent } from "./reference.component.js";
 import { Utils } from "../../helpers/utils.js";
-import { BaseComponent } from "../base.component.js";
+import { ContainerBaseComponent } from "./container-base.component.js";
 
 const TAG = "[FlowContainerComponent]";
 
-export class FlowContainerComponent extends BaseComponent {
-    jsComponentPConnectData = {};
+export class FlowContainerComponent extends ContainerBaseComponent {
     pCoreConstants;
-    props;
     childrenPConns = [];
-    assignmentComponent;
-    alertBannerComponents = [];
     containerName$;
     bannerMessages;
     cancelPressed = false;
+    setTimeoutIds = [];
+
+    get assignmentComponent() {
+        return this.childrenComponents?.find((c) => c.type === "Assignment") ?? null;
+    }
+
+    set assignmentComponent(value) {
+        const banners = this.alertBannerComponents;
+        this.childrenComponents = value != null ? [value, ...banners] : [...banners];
+    }
+
+    get alertBannerComponents() {
+        return (this.childrenComponents ?? []).filter((c) => c.type === "AlertBanner");
+    }
+
+    set alertBannerComponents(banners) {
+        const assignment = this.assignmentComponent;
+        this.childrenComponents = assignment != null ? [assignment, ...banners] : [...banners];
+    }
 
     // messages
     localizedVal;
@@ -45,11 +60,10 @@ export class FlowContainerComponent extends BaseComponent {
     }
 
     destroy() {
-        super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.assignmentComponent.destroy();
-        this.componentsManager.onComponentRemoved(this);
+        this.setTimeoutIds.forEach((timeoutId) => clearTimeout(timeoutId));
+        this.setTimeoutIds = [];
         this.#unsubscribeForEvents();
+        super.destroy();
     }
 
     update(pConn) {
@@ -64,8 +78,7 @@ export class FlowContainerComponent extends BaseComponent {
         const title = caseId ? `${this.containerName$} (${caseId})` : "Loading ...";
         this.props = {
             title: title,
-            assignment: this.assignmentComponent.compId,
-            alertBanners: this.alertBannerComponents.map((banner) => banner.compId),
+            children: this.getChildrenProps(),
         };
         this.componentsManager.onComponentPropsUpdate(this);
     }
@@ -91,12 +104,23 @@ export class FlowContainerComponent extends BaseComponent {
             // with a cancel, need to timeout so todo will update correctly
             if (this.cancelPressed) {
                 this.cancelPressed = false;
-                setTimeout(() => this.#updateSelf(), 500);
+                this.#scheduleUpdateSelf(500);
             } else {
                 // needs to be called after whole redux events processing for submit is finished (see: TASK-1720886 pulse)
-                setTimeout(() => this.#updateSelf());
+                this.#scheduleUpdateSelf();
             }
         }
+    }
+
+    #scheduleUpdateSelf(delay = 0) {
+        const timeoutId = setTimeout(() => {
+            this.setTimeoutIds = this.setTimeoutIds.filter((id) => id !== timeoutId);
+            if (!this.alive) {
+                return;
+            }
+            this.#updateSelf();
+        }, delay);
+        this.setTimeoutIds.push(timeoutId);
     }
 
     #updateBanners() {
@@ -168,12 +192,13 @@ export class FlowContainerComponent extends BaseComponent {
 
     #createAndInitAssignmentComponent() {
         this.assignmentPConn = this.#getAssignmentPConn(this.pConn) || this.pConn;
-        this.assignmentComponent = this.componentsManager.create("Assignment", [
+        const assignmentComponent = this.componentsManager.create("Assignment", [
             this.assignmentPConn,
             this.childrenPConns,
             this.containerContextKey,
         ]);
-        this.assignmentComponent.init();
+        assignmentComponent.init();
+        this.assignmentComponent = assignmentComponent;
     }
 
     #updateSelf() {
@@ -316,12 +341,13 @@ export class FlowContainerComponent extends BaseComponent {
         const routingInfo = this.jsComponentPConnect.getComponentProp(this, "routingInfo");
         const flowContainerInfo = { accessedOrder: routingInfo.accessedOrder, items: routingInfo.items };
         const isAssignmentView = this.jsComponentPConnect.getComponentProp(this, "isAssignmentView") ?? false;
-        this.flowContainerHelper.createContainerPConnect(
+        const getPConnect = this.flowContainerHelper.createContainerPConnect(
             flowContainerInfo,
             parentPConnect.getPageReference(),
             parentPConnect.getContainerName(),
             isAssignmentView
         );
+        return getPConnect();
     }
 
     #subscribeForEvents() {

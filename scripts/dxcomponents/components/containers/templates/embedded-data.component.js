@@ -3,8 +3,7 @@ import { ContainerBaseComponent } from "../container-base.component.js";
 const TAG = "EmbeddedDataComponent";
 
 export class EmbeddedDataComponent extends ContainerBaseComponent {
-    jsComponentPConnectData = {};
-    #simpleComboBox;
+    simpleComboBoxComponent;
 
     props = {
         visible: true,
@@ -26,11 +25,8 @@ export class EmbeddedDataComponent extends ContainerBaseComponent {
     }
 
     destroy() {
+        this.simpleComboBoxComponent?.destroy();
         super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.#simpleComboBox?.destroy();
-        this.destroyChildren();
-        this.componentsManager.onComponentRemoved(this);
     }
 
     update(pConn) {
@@ -62,20 +58,20 @@ export class EmbeddedDataComponent extends ContainerBaseComponent {
 
         this.reconcileChildren();
 
-        const comboBoxIds = [this.#simpleComboBox.compId];
+        const comboBoxChild = [{id: this.simpleComboBoxComponent.compId, type: this.simpleComboBoxComponent.type }];
         // Web does not render details in readonly mode
         const isEditable = !displayMode || displayMode === "EDITABLE";
-        const viewChildrenIds = !isEditable ? [] : this.getChildrenComponentsIds();
-        this.props.children = [...comboBoxIds, ...viewChildrenIds];
+        const viewChildren = !isEditable ? [] : this.getChildrenProps();
+        this.props.children = [...comboBoxChild, ...viewChildren];
         this.componentsManager.onComponentPropsUpdate(this);
     }
 
     #ensureSimpleComboBox() {
-        if (!this.#simpleComboBox) {
-            this.#simpleComboBox = this.componentsManager.create("SimpleComboBox", [this.pConn]);
-            this.#simpleComboBox.init();
+        if (!this.simpleComboBoxComponent) {
+            this.simpleComboBoxComponent = this.componentsManager.create("SimpleComboBox", [this.pConn]);
+            this.simpleComboBoxComponent.init();
         } else {
-            this.#simpleComboBox.update(this.pConn);
+            this.simpleComboBoxComponent.update(this.pConn);
         }
     }
 }

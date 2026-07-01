@@ -108,7 +108,7 @@ export class DetailsComponent extends DetailsTemplateBase {
                 config: field.config
             })),
             showHighlightedFields: this.showHighlightedFields,
-            children: this.getChildrenComponentsIds(),
+            children: this.getChildrenProps(),
         };
         this.componentsManager.onComponentPropsUpdate(this);
     }

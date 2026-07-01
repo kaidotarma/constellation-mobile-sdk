@@ -14,12 +14,12 @@ struct FlowContainerComponentView: View {
                 Text(state.component.title)
                     .font(.title)
             }
-            ForEach(state.component.alertBanners, id: \.context.id) {
-                AnyView($0.render())
+            ForEach(state.component.children.filter { $0 is AlertBannerComponent }, id: \.context.id) { child in
+                child.renderView()
                     .cornerRadius(10)
             }
-            if let assignment = state.component.assignment {
-                AnyView(assignment.render())
+            ForEach(state.component.children.filter { $0 is AssignmentComponent }, id: \.context.id) { child in
+                child.renderView()
                     .cornerRadius(10)
             }
         }

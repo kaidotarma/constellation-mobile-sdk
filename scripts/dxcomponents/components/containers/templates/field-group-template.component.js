@@ -1,14 +1,19 @@
 import { Utils } from "../../../helpers/utils.js";
-import { BaseComponent } from "../../base.component.js";
+import { ContainerBaseComponent } from "../container-base.component.js";
 import { evaluateAllowRowAction, getReferenceList } from "./template-utils.js";
 
-export class FieldGroupTemplateComponent extends BaseComponent {
-    jsComponentPConnectData = {};
+export class FieldGroupTemplateComponent extends ContainerBaseComponent {
+    setTimeoutId;
     items = [];
     configProps;
 
     props = {
-        child: undefined,
+        children: [],
+        items: [],
+        label: "",
+        showLabel: "",
+        allowAddItems: true,
+        addButtonLabel: ""
     };
 
     inheritedProps$;
@@ -40,16 +45,24 @@ export class FieldGroupTemplateComponent extends BaseComponent {
         this.componentsManager.onComponentAdded(this);
         this.updateSelf();
         if (this.referenceList?.length === 0 && (this.allowedActions.add || this.allowedActions.edit)) {
-            setTimeout(() => this.addFieldGroupItem());
+            this.setTimeoutId = setTimeout(() => {
+                this.setTimeoutId = undefined;
+                if (!this.alive) {
+                    return;
+                }
+                this.addFieldGroupItem();
+            });
         }
     }
 
     destroy() {
-        super.destroy();
-        this.destroyItems();
+        if (this.setTimeoutId) {
+            clearTimeout(this.setTimeoutId);
+            this.setTimeoutId = undefined;
+        }
+        this.items = [];
         this.props.items = [];
-        this.componentsManager.onComponentPropsUpdate(this);
-        this.componentsManager.onComponentRemoved(this);
+        super.destroy();
     }
 
     update(pConn, configProps) {
@@ -66,7 +79,6 @@ export class FieldGroupTemplateComponent extends BaseComponent {
 
     updateSelf() {
         this.updateActionsAndMode();
-        var itemsToDestroy = [];
         this.inheritedProps$ = this.pConn.getInheritedProps();
         const label = this.configProps.label;
         const showLabel = this.configProps.showLabel;
@@ -85,45 +97,49 @@ export class FieldGroupTemplateComponent extends BaseComponent {
             JSON.stringify(this.referenceList) !== JSON.stringify(newReferenceList)
         ) {
             this.referenceList = newReferenceList;
-            var updatedItems = [];
-            if (this.referenceListLength !== newReferenceList.length) {
-                itemsToDestroy = this.items;
-                this.items = [];
-            }
-            const { allowRowDelete, allowRowEdit } = this.pConn.getComponentConfig();
-            this.referenceList?.forEach((item, index) => {
-                const oldComponent = this.items[index]?.component;
-                const newPConn = this.buildItemPConnect(
-                    this.pConn,
-                    index,
-                    lookForChildInConfig,
-                    evaluateAllowRowAction(allowRowEdit, item)
-                ).getPConnect();
-                let newComponent;
-                if (oldComponent) {
-                    oldComponent.update(newPConn);
-                    newComponent = oldComponent;
-                } else {
-                    newComponent = this.componentsManager.create(newPConn.meta.type, [newPConn]);
-                    newComponent.init();
-                }
-                updatedItems.push({
-                    id: index,
-                    name:
-                        this.fieldHeader === "propertyRef"
-                            ? this.getDynamicHeader(item, index)
-                            : this.getStaticHeader(this.heading, index),
-                    component: newComponent,
-                    allowDelete: this.allowedActions.delete && evaluateAllowRowAction(allowRowDelete, item),
-                });
-            });
-            this.items = updatedItems;
-            this.referenceListLength = newReferenceList.length;
+            const { children, items } = this.#syncChildrenAndItems(lookForChildInConfig);
+            this.childrenComponents = children;
+            this.items = items;
         }
         this.sendPropsUpdate();
-        itemsToDestroy.forEach((item) => {
-            item.component.destroy?.();
+    }
+
+    #syncChildrenAndItems(lookForChildInConfig) {
+        const oldChildrenComponents = this.childrenComponents;
+        const { allowRowDelete, allowRowEdit } = this.pConn.getComponentConfig();
+        const children = [];
+        const items = [];
+
+        this.referenceList?.forEach((item, index) => {
+            const newPConn = this.buildItemPConnect(
+                this.pConn,
+                index,
+                lookForChildInConfig,
+                evaluateAllowRowAction(allowRowEdit, item)
+            ).getPConnect();
+            const newComponent = this.reuseOrCreateChild(oldChildrenComponents[index], newPConn);
+            children.push(newComponent);
+            items.push(this.#buildItem(item, index, newComponent.compId, allowRowDelete));
         });
+
+        oldChildrenComponents.slice(this.referenceList.length).forEach((component) => {
+            component.destroy?.();
+        });
+        this.referenceListLength = this.referenceList.length;
+
+        return { children, items };
+    }
+
+    #buildItem(item, index, componentId, allowRowDelete) {
+        return {
+            id: index,
+            heading:
+                this.fieldHeader === "propertyRef"
+                    ? this.getDynamicHeader(item, index)
+                    : this.getStaticHeader(this.heading, index),
+            componentId,
+            allowDelete: this.allowedActions.delete && evaluateAllowRowAction(allowRowDelete, item),
+        };
     }
 
     updateActionsAndMode() {
@@ -164,22 +180,13 @@ export class FieldGroupTemplateComponent extends BaseComponent {
             }
             return;
         }
-
-        this.items?.forEach((item) => {
-            item.component.onEvent(event);
-        });
+        super.onEvent(event);
     }
 
     sendPropsUpdate() {
         this.props = {
-            items: this.items.map((child) => {
-                return {
-                    id: child.id,
-                    heading: child.name,
-                    componentId: child.component.compId,
-                    allowDelete: child.allowDelete,
-                };
-            }),
+            children: this.getChildrenProps(),
+            items: this.items,
             label: this.label,
             showLabel: this.showLabel,
             allowAddItems: this.allowedActions.add,
@@ -243,12 +250,5 @@ export class FieldGroupTemplateComponent extends BaseComponent {
         }
 
         return pConnect;
-    }
-
-    destroyItems() {
-        this.items.forEach((item) => {
-            item.component.destroy?.();
-        });
-        this.items = [];
     }
 }

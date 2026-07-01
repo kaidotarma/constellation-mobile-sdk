@@ -4,7 +4,6 @@ const TAG = "[DataReferenceComponent]";
 const SELECTION_MODE = { SINGLE: "single", MULTI: "multi" };
 
 export class DataReferenceComponent extends ContainerBaseComponent {
-    jsComponentPConnectData = {};
     props = {
         children: [],
         visible: true,
@@ -52,6 +51,9 @@ export class DataReferenceComponent extends ContainerBaseComponent {
             PCore.getDataApiUtils()
                 .getData(this.refList, { dataViewParameters: this.parameters }, "")
                 .then((res) => {
+                    if (!this.alive) {
+                        return;
+                    }
                     if (res.data.data !== null) {
                         const ddDataSource = res.data.data
                             .map((listItem) => ({
@@ -74,15 +76,6 @@ export class DataReferenceComponent extends ContainerBaseComponent {
                     });
                 });
         }
-    }
-
-    destroy() {
-        super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.destroyChildren();
-        this.props.children = [];
-        this.componentsManager.onComponentPropsUpdate(this);
-        this.componentsManager.onComponentRemoved(this);
     }
 
     update(pConn) {
@@ -166,7 +159,7 @@ export class DataReferenceComponent extends ContainerBaseComponent {
 
     #sendPropsUpdate() {
         this.props = {
-            children: this.getChildrenComponentsIds(),
+            children: this.getChildrenProps(),
             visible: this.propsToUse.visibility ?? this.props.visible,
         };
         this.componentsManager.onComponentPropsUpdate(this);
@@ -189,7 +182,7 @@ export class DataReferenceComponent extends ContainerBaseComponent {
         this.reconcileChildren(this.children);
         this.props = {
             label: this.propsToUse.label || "",
-            children: this.getChildrenComponentsIds(),
+            children: this.getChildrenProps(),
             isDisplayOnly: true
         };
         this.componentsManager.onComponentPropsUpdate(this);
@@ -383,6 +376,9 @@ export class DataReferenceComponent extends ContainerBaseComponent {
             PCore.getDataApiUtils()
                 .getCaseEditLock(caseKey, "")
                 .then((caseResponse) => {
+                    if (!this.alive) {
+                        return;
+                    }
                     const pageTokens = this.pConn.getPageReference().replace("caseInfo.content", "").split(".");
                     let curr = {};
                     const commitData = curr;
@@ -413,6 +409,9 @@ export class DataReferenceComponent extends ContainerBaseComponent {
                             this.pConn.getContextName()
                         )
                         .then((response) => {
+                            if (!this.alive) {
+                                return;
+                            }
                             PCore.getContainerUtils().updateParentLastUpdateTime(
                                 this.pConn.getContextName(),
                                 response.data.data.caseInfo.lastUpdateTime

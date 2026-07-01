@@ -19,9 +19,8 @@ export class SemanticLinkComponent extends BaseComponent {
     }
 
     destroy() {
-        super.destroy();
         this.jsComponentPConnectData.unsubscribeFn?.();
-        this.componentsManager.onComponentRemoved(this);
+        super.destroy();
     }
 
     // Required by ContainerBaseComponent.onEvent() which propagates events to all children

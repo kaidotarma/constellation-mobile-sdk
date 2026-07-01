@@ -32,9 +32,9 @@ class SimpleTableManualRenderer : ComponentRenderer<SimpleTableManualComponent> 
                         } else null,
                         cells = row.cells.map {
                             {
-                                val testTag = (it.component as? FieldComponent)?.pConnectPropertyReference ?: ""
+                                val testTag = (it as? FieldComponent)?.pConnectPropertyReference ?: ""
                                 Box(modifier = Modifier.testTag(testTag)) {
-                                    it.component.Render()
+                                    it.Render()
                                 }
                             }
                         }

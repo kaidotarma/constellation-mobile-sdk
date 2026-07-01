@@ -10,16 +10,13 @@ import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import com.pega.constellation.sdk.kmp.core.components.containers.ModalViewContainerComponent
-import com.pega.constellation.sdk.kmp.core.components.fields.FieldComponent
-import com.pega.constellation.sdk.kmp.core.components.fields.TextInputComponent
+import com.pega.constellation.sdk.kmp.core.components.widgets.AlertBannerComponent
 import com.pega.constellation.sdk.kmp.ui.components.cmp.controls.common.Heading
 import com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form.Button
 import com.pega.constellation.sdk.kmp.ui.renderer.cmp.ComponentRenderer
@@ -43,8 +40,8 @@ class ModalViewContainerRenderer : ComponentRenderer<ModalViewContainerComponent
                         if (title.isNotEmpty()) {
                             Heading(title)
                         }
-                        alertBanners.forEach { it.Render() }
-                        children.forEach { it.Render() }
+                        children.filterIsInstance<AlertBannerComponent>().forEach { it.Render() }
+                        children.filterNot { it is AlertBannerComponent }.forEach { it.Render() }
                         Row(modifier = Modifier.fillMaxWidth()) {
                             Button(
                                 title = cancelButtonLabel,

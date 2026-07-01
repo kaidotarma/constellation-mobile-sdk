@@ -22,7 +22,7 @@ export class AlertBannerComponent {
     }
 
     destroy() {
-        this.alive = true;
+        this.alive = false;
         this.componentsManager.onComponentRemoved(this);
     }
 

@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.pega.constellation.sdk.kmp.core.components.containers.AssignmentCardComponent
+import com.pega.constellation.sdk.kmp.core.components.widgets.ActionButtonsComponent
 import com.pega.constellation.sdk.kmp.ui.renderer.cmp.ComponentRenderer
 import com.pega.constellation.sdk.kmp.ui.renderer.cmp.Render
 
@@ -15,9 +16,9 @@ class AssignmentCardRenderer : ComponentRenderer<AssignmentCardComponent> {
     override fun AssignmentCardComponent.Render() {
         Column {
             LazyColumn(Modifier.weight(1f)) {
-                items(children) { it.Render() }
+                items(children.filter { it !is ActionButtonsComponent }) { it.Render() }
             }
-            actionButtons?.Render()
+            children.firstOrNull { it is ActionButtonsComponent }?.Render()
         }
     }
 }

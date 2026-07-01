@@ -3,18 +3,41 @@ import { ReferenceComponent } from "./reference.component.js";
 
 export class ContainerBaseComponent extends BaseComponent {
     childrenComponents = [];
+    props = {
+        children: []
+    };
+    jsComponentPConnectData = {};
 
     destroy() {
+        this.jsComponentPConnectData.unsubscribeFn?.();
+        this.destroyChildren();
+        this.componentsManager.onComponentPropsUpdate(this);
+        // must be after onComponentPropsUpdate ('alive' is set to false in BaseComponent)
         super.destroy();
     }
 
     destroyChildren() {
         this.childrenComponents.forEach((component) => component.destroy?.());
         this.childrenComponents = [];
+        this.props.children = [];
     }
 
-    getChildrenComponentsIds() {
-        return this.childrenComponents.map((component) => component.compId);
+    getChildrenProps() {
+        const validChildren = this.childrenComponents.filter((component) => {
+            const isValid = component.compId != null && component.type != null;
+            if (!isValid) {
+                console.warn(
+                    `[ContainerBaseComponent] Skipping child with missing compId or type (compId: ${component.compId}, type: ${component.type}).`,
+                    component
+                );
+            }
+            return isValid;
+        });
+
+        return validChildren.map((component) => ({
+            id: component.compId,
+            type: component.type,
+        }));
     }
 
     onEvent(event) {
@@ -60,6 +83,7 @@ export class ContainerBaseComponent extends BaseComponent {
         this.childrenComponents = reconciledComponents;
         this.#destroyOldChildrenComponents(oldChildrenComponents);
         uninitializedComponents.forEach((c) => c.init());
+        this.props.children = [];
     }
 
     #getComponentToReuse(oldChildrenComponents, newChildPConn) {
@@ -94,5 +118,16 @@ export class ContainerBaseComponent extends BaseComponent {
         return (
             newChildPConn.meta.name === oldChildPConn.meta.name && newChildPConn.meta.type === oldChildPConn.meta.type
         );
+    }
+
+    reuseOrCreateChild(oldComponent, newPConn) {
+        if (oldComponent) {
+            oldComponent.update(newPConn);
+            return oldComponent;
+        }
+
+        const newComponent = this.componentsManager.create(newPConn.meta.type, [newPConn]);
+        newComponent.init();
+        return newComponent;
     }
 }

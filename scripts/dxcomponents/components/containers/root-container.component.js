@@ -1,24 +1,21 @@
 import { Utils } from "../../helpers/utils.js";
-import { BaseComponent } from "../base.component.js";
+import { ContainerBaseComponent } from "./container-base.component.js";
 
-const options = {context: "app"};
+const options = { context: "app" };
 const TAG = "[RootContainerComponent]";
+const VIEW_CONTAINER = "ViewContainer";
+const MODAL_VIEW_CONTAINER = "ModalViewContainer";
 
-export class RootContainerComponent extends BaseComponent {
-    #viewContainerComponent;
-    #modalViewContainerComponent;
-
-    jsComponentPConnectData = {};
+export class RootContainerComponent extends ContainerBaseComponent {
     props = {
-        viewContainer: "",
         httpMessages: {},
+        children: [],
     };
 
     init() {
-        const {containers} = PCore.getStore().getState();
+        const { containers } = PCore.getStore().getState();
         const items = Object.keys(containers).filter((item) => item.includes("root"));
         PCore.getContainerUtils().getContainerAPI().addContainerItems(items);
-        this.#configureModalContainer();
         Utils.setHasViewContainer("false");
         this.jsComponentPConnectData = this.jsComponentPConnect.registerAndSubscribeComponent(
             this,
@@ -28,20 +25,11 @@ export class RootContainerComponent extends BaseComponent {
         this.#checkAndUpdate();
     }
 
-    destroy() {
-        super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.#viewContainerComponent?.destroy?.();
-        this.#sendPropsUpdate();
-        this.componentsManager.onComponentRemoved(this);
-    }
-
     #sendPropsUpdate() {
         const httpMessages = this.jsComponentPConnectData.httpMessages || [];
         this.props = {
-            viewContainer: this.#viewContainerComponent.compId,
-            modalViewContainer: this.#modalViewContainerComponent.compId,
             httpMessages: httpMessages,
+            children: this.getChildrenProps()
         };
         this.componentsManager.onComponentPropsUpdate(this);
 
@@ -69,8 +57,8 @@ export class RootContainerComponent extends BaseComponent {
     }
 
     #updateSelf() {
-        const myProps = this.jsComponentPConnect.getCurrentCompleteProps(this);
-        const {renderingMode} = myProps;
+        this.#configureModalContainer();
+        const { renderingMode } = this.jsComponentPConnect.getCurrentCompleteProps(this);
         if (renderingMode === "noPortal") {
             this.#generateViewContainerForNoPortal();
         } else {
@@ -88,7 +76,7 @@ export class RootContainerComponent extends BaseComponent {
         if (
             !arChildren ||
             arChildren.length !== 1 ||
-            arChildren[0].getPConnect().getComponentName() !== "ViewContainer"
+            arChildren[0].getPConnect().getComponentName() !== VIEW_CONTAINER
         ) {
             console.error(TAG, "Only ViewContainer in RootContainer supported for 'noPortal' mode.");
             return;
@@ -97,24 +85,19 @@ export class RootContainerComponent extends BaseComponent {
         const configProps = this.pConn.getConfigProps();
         const viewContConfig = {
             meta: {
-                type: "ViewContainer",
+                type: VIEW_CONTAINER,
                 config: configProps,
             },
             options,
         };
         const viewContainerPConn = PCore.createPConnect(viewContConfig).getPConnect();
-        if (this.#viewContainerComponent) {
-            this.#viewContainerComponent.update(viewContainerPConn);
-        } else {
-            this.#viewContainerComponent = this.componentsManager.create(viewContainerPConn.meta.type, [viewContainerPConn]);
-            this.#viewContainerComponent.init();
-        }
+        this.#updateOrCreateChildComponent(VIEW_CONTAINER, viewContainerPConn);
     }
 
     #configureModalContainer() {
         const configObjModal = PCore.createPConnect({
             meta: {
-                type: 'ModalViewContainer',
+                type: MODAL_VIEW_CONTAINER,
                 config: {
                     name: 'modal'
                 }
@@ -123,15 +106,18 @@ export class RootContainerComponent extends BaseComponent {
         });
 
         const modalViewContainerPConn = configObjModal.getPConnect();
-        if (this.#modalViewContainerComponent) {
-            this.#modalViewContainerComponent.update(modalViewContainerPConn);
+        this.#updateOrCreateChildComponent(MODAL_VIEW_CONTAINER, modalViewContainerPConn);
+    }
+
+    #updateOrCreateChildComponent(type, pConn) {
+        let component = this.childrenComponents.find((component) => component.type === type);
+        if (component) {
+            component.update(pConn);
         } else {
-            this.#modalViewContainerComponent = this.componentsManager.create(modalViewContainerPConn.meta.type, [modalViewContainerPConn]);
-            this.#modalViewContainerComponent.init();
-        }
-        if (this.compId !== "1") {
-            console.error(TAG, "RootComponent id must be '1' to match root container on consumer side");
-            return;
+            component = this.componentsManager.create(pConn.meta.type, [pConn]);
+            // must add to childrenComponents before init to avoid re-entry loops
+            this.childrenComponents.push(component);
+            component.init();
         }
     }
 }

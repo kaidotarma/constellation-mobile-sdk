@@ -10,7 +10,7 @@ class SimpleTableSelectRenderer : ComponentRenderer<SimpleTableSelectComponent> 
     @Composable
     override fun SimpleTableSelectComponent.Render() {
         Column {
-            child?.Render()
+            children.forEach { it.Render() }
         }
     }
 }

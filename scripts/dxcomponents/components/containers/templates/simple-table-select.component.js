@@ -1,14 +1,12 @@
 import { Utils } from "../../../helpers/utils.js";
 import { getComponentFromMap } from "../../../mappings/sdk-component-map.js";
-import { BaseComponent } from "../../base.component.js";
+import { ContainerBaseComponent } from "../container-base.component.js";
 
 const TAG = "[SimpleTableSelectComponent]";
 
-export class SimpleTableSelectComponent extends BaseComponent {
-    jsComponentPConnectData = {};
-    childComponent;
+export class SimpleTableSelectComponent extends ContainerBaseComponent {
     props = {
-        child: null,
+        children: [],
     };
 
     label = "";
@@ -37,12 +35,6 @@ export class SimpleTableSelectComponent extends BaseComponent {
         );
         this.componentsManager.onComponentAdded(this);
         this.#updateSelf();
-    }
-
-    destroy() {
-        super.destroy();
-        this.jsComponentPConnectData.unsubscribeFn?.();
-        this.componentsManager.onComponentRemoved(this);
     }
 
     update(pConn) {
@@ -107,14 +99,9 @@ export class SimpleTableSelectComponent extends BaseComponent {
         this.#sendPropsUpdate();
     }
 
-    onEvent(event) {
-        // TODO: remove optional call when other modes are implemented so that child component is always defined
-        this.childComponent?.onEvent(event);
-    }
-
     #sendPropsUpdate() {
         this.props = {
-            child: this.childComponent.compId,
+            children: this.getChildrenProps(),
         };
         this.componentsManager.onComponentPropsUpdate(this);
     }
@@ -131,7 +118,9 @@ export class SimpleTableSelectComponent extends BaseComponent {
             childComponentType = "ListView";
             propsToPass = [this.listViewProps];
         }
-        if (this.childComponent === undefined) {
+        const existingChild = this.childrenComponents[0];
+        if (!existingChild || existingChild.type !== childComponentType) {
+            this.destroyChildren();
             const childClass = getComponentFromMap(childComponentType);
             let childInstance;
             if (childClass.name === "UnsupportedComponent") {
@@ -141,9 +130,9 @@ export class SimpleTableSelectComponent extends BaseComponent {
                 childInstance = new childClass(this.componentsManager, this.pConn, ...propsToPass);
             }
             childInstance.init();
-            this.childComponent = childInstance;
+            this.childrenComponents = [childInstance];
         } else {
-            this.childComponent.update(this.pConn, ...propsToPass);
+            existingChild.update(this.pConn, ...propsToPass);
         }
     }
 

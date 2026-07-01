@@ -19,6 +19,7 @@ export class BaseComponent {
     }
 
     destroy() {
+        this.componentsManager.onComponentRemoved(this);
         this.alive = false;
     }
 }
