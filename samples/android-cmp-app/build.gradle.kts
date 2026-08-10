@@ -17,7 +17,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(project(":samples:base-cmp-app"))
-            implementation(compose.preview)
+            implementation(libs.compose.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.oidc.appsupport)
             implementation(libs.oidc.tokenstore)
@@ -25,9 +25,8 @@ kotlin {
         }
 
         androidInstrumentedTest.dependencies {
-            implementation(compose.material3)
-            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-            implementation(compose.uiTest)
+            implementation(libs.compose.material3)
+            implementation(libs.compose.ui.test)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.ui.test.junit4)
             implementation(libs.androidx.ui.test.junit4.android)

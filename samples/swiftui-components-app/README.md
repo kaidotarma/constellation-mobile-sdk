@@ -5,6 +5,8 @@
 The purpose of this application is to demonstrate how a multiplatform model can be
 integrated into a native application and rendered using SwiftUI.
 
+Build the multiplatform framework with Gradle `9.4.0` and JDK 17 or newer using the repository's Gradle Wrapper. Xcode and macOS are required for the SwiftUI application.
+
 ### Configuration
 
 The application can be configured via parameters in the `Info.plist` file. These

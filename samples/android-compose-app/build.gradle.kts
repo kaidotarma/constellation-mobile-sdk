@@ -33,8 +33,8 @@ dependencies {
     implementation("com.pega.constellation.sdk.kmp:core:$sdkVersion")
     implementation("com.pega.constellation.sdk.kmp:engine-webview:$sdkVersion")
 
-    implementation(compose.foundation)
-    implementation(compose.material3)
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.material3)
     implementation(libs.androidx.activity.compose)
     implementation(libs.okhttp)
 }

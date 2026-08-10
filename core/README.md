@@ -4,6 +4,10 @@
 The core module of the Constellation SDK provides the foundational logic and abstractions for building mobile applications. 
 It targets Android, iOS, and JVM, and serves as the main entry point for SDK features, configuration, and component management.
 
+### Build requirements
+
+Build the project with the Gradle Wrapper and JDK 17 or newer. The project uses Gradle `9.4.0` with AGP `8.13.2` and Kotlin `2.4.0`.
+
 ### Features
 - **Kotlin Multiplatform Support**: Shared business logic across Android, iOS, and JVM.
 - **Easy Configuration**: Easily configure SDK behavior via `ConstellationSdkConfig`.

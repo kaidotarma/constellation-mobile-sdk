@@ -2,6 +2,8 @@
 
 Project contains Desktop sample application that demonstrates the usage of the SDK.
 
+Build the desktop sample with Gradle `9.4.0` and JDK 17 or newer using the repository's Gradle Wrapper.
+
 To run the sample application, you need to provide necessary configuration: [SDKConfig.kt](../../samples/base-cmp-app/src/commonMain/kotlin/com/pega/constellation/sdk/kmp/samples/basecmpapp/SDKConfig.kt)
 
 ```kotlin

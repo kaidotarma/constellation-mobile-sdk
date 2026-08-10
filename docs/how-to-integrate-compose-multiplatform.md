@@ -9,6 +9,8 @@
 
 ### 1. Prerequisites
 
+- JDK 17 or newer to run Gradle
+- Gradle `9.4.0` through the SDK's Gradle Wrapper when building the SDK locally
 - Xcode 16.4
    - In order to work with Xcode 26 you need to upgrade (gradle/libs.versions.toml) Kotlin to pre-release `2.2.21-RC2` version. Please bear in mind that this is an RC version — some features may not work as expected.
 - minSdk version
@@ -229,4 +231,3 @@ See [Compose Android Sample Application](../samples/android-compose-app/README.m
 ## More documentation
 
 For more detailed information, please refer to the [Constellation SDK Core documentation](../core/README.md).
-

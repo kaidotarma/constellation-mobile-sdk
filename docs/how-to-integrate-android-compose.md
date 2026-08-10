@@ -7,6 +7,8 @@
 
 ### 1. Prerequisites
 
+- JDK 17 or newer to run Gradle
+- Gradle `9.4.0` through the SDK's Gradle Wrapper when building the SDK locally
 - minSdk version
     - minSdk needs to be >= 26
 
@@ -166,4 +168,3 @@ See [Compose Android Sample Application](../samples/android-compose-app/README.m
 ## More documentation
 
 For more detailed information, please refer to the [Constellation SDK Core documentation](../core/README.md).
-

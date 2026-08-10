@@ -3,6 +3,8 @@
 This module provides rendering logic for Compose Multiplatform technology.
 It allows to render components from the core module using ready-to-use composables from `ui:components` module.
 
+The project uses Gradle `9.4.0`; use JDK 17 or newer to run Gradle.
+
 ### Rendering components
 
 To render components, use the `Render()` extension, which is available for all the components:

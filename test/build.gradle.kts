@@ -1,10 +1,18 @@
-import org.gradle.kotlin.dsl.invoke
+import org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidKotlinMultiplatformLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+}
+
+// Gradle 9 enforces failOnNoDiscoveredTests by default. This module's iOS native test
+// tasks (e.g. iosSimulatorArm64Test) have no test sources that actually execute on
+// this target, so we opt out here rather than per-target. If iOS-specific tests are
+// ever added, re-verify that a broken/missing test setup wouldn't be masked by this.
+tasks.withType<KotlinNativeTest>().configureEach {
+    failOnNoDiscoveredTests.set(false)
 }
 
 kotlin {
@@ -43,8 +51,8 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(libs.kotlin.test)
-                implementation(compose.runtime)
-                implementation(compose.components.resources)
+                implementation(libs.compose.runtime)
+                implementation(libs.compose.components.resources)
                 implementation(libs.kotlinx.serialization.json)
             }
         }

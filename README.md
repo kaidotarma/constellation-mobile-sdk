@@ -5,6 +5,15 @@
 The **Pega Constellation Mobile SDK** is designated for Native Android and iOS applications.
 It allows to embed Pega form into existing application with the possibility of using customized UI.
 
+## Build requirements
+
+- Gradle `9.4.0` via the checked-in Gradle Wrapper (`./gradlew`)
+- JDK 17 or newer to run Gradle
+- Android SDK and Android Studio-compatible tooling for Android builds
+- Xcode and macOS for iOS frameworks and iOS sample tests
+
+Use the Gradle Wrapper for all project commands. The SDK currently keeps AGP `8.13.2` and Kotlin `2.4.0` unchanged while using Gradle `9.4.0`.
+
 Currently Pega 24 and Pega 25 are supported.
 
 The SDK allows developers to:

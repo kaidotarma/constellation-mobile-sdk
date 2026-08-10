@@ -3,6 +3,12 @@
 
 Integration with SwiftUI applications is demonstrated in the README of iOS sample application.
 
+### Prerequisites
+
+- JDK 17 or newer to run Gradle
+- Gradle `9.4.0` through the SDK's Gradle Wrapper when building the framework locally
+- Xcode and macOS for framework compilation and iOS application builds
+
 See [SwiftUI Components Sample Application](../samples/swiftui-components-app/README.md).
 
 ### See also
@@ -22,4 +28,3 @@ See [Compose Android Sample Application](../samples/android-compose-app/README.m
 ## More documentation
 
 For more detailed information, please refer to the [Constellation SDK Core documentation](../core/README.md).
-

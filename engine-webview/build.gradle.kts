@@ -44,8 +44,8 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":core"))
-                implementation(compose.components.resources)
-                implementation(compose.runtime)
+                implementation(libs.compose.components.resources)
+                implementation(libs.compose.runtime)
                 implementation(libs.kotlin.stdlib)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.ktor.client.core)

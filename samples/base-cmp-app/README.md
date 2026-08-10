@@ -2,6 +2,8 @@
 
 This module provides shared code for sample applications demonstrating the usage of Constellation SDK.
 
+Build the sample modules with Gradle `9.4.0` and JDK 17 or newer using the repository's Gradle Wrapper.
+
 ### Module contents
 
 - [Shared configuration](./src/commonMain/kotlin/com/pega/constellation/sdk/kmp/samples/basecmpapp/SDKConfig.kt)

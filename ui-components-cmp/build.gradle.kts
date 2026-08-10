@@ -27,11 +27,11 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(compose.components.resources)
-                implementation(compose.foundation)
-                implementation(compose.material3)
-                implementation(compose.runtime)
-                implementation(compose.ui)
+                implementation(libs.compose.components.resources)
+                implementation(libs.compose.foundation)
+                implementation(libs.compose.material3)
+                implementation(libs.compose.runtime)
+                implementation(libs.compose.ui)
                 implementation(libs.androidx.lifecycle.runtimeCompose)
                 implementation(libs.androidx.lifecycle.viewmodel)
                 implementation(libs.kotlin.stdlib)
@@ -50,7 +50,7 @@ kotlin {
                     dependencies {
                         // START: Dependencies required for @Preview to work in Android Studio
                         // https://youtrack.jetbrains.com/projects/KMT/issues/KMT-1312/Preview-not-work-in-commonMain-with-multi-module
-                        implementation(compose.uiTooling)
+                        implementation(libs.compose.ui.tooling)
                         implementation(libs.androidx.activity.compose)
                         implementation(libs.androidx.customview.poolingcontainer)
                         implementation(libs.androidx.emoji2)
