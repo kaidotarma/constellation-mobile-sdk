@@ -1,5 +1,13 @@
 # AGENTS.md — Constellation Mobile SDK
 
+## Project guidance
+
+- Read `.specify/memory/constitution.md` for the project's non-negotiable engineering principles.
+- For non-trivial changes, use the spec-driven workflow described in `CONTRIBUTING.md` and the Copilot skills under `.github/skills/`.
+- Read the relevant module README and `docs/` page before changing behavior. Preserve Kotlin Multiplatform module and source-set boundaries.
+- Use the checked-in Gradle Wrapper and report the exact verification commands and results.
+- Do not create or modify GitHub Actions workflows unless the user explicitly requests it.
+
 ## Dev environment tips
 1. Do not hallucinate. When a task requires specific data that is not provided and cannot be reliably inferred from existing code or fixtures, ask the user before proceeding.
 2. Do not change the logic of the code while doing migrations or refactoring, unless explicitly asked for.

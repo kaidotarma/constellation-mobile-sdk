@@ -5,6 +5,12 @@
 The **Pega Constellation Mobile SDK** is designated for Native Android and iOS applications.
 It allows to embed Pega form into existing application with the possibility of using customized UI.
 
+## Contributing and Spec-Driven Development
+
+Feature work and significant behavior changes follow a specification-first workflow. Start with the repository guidance in [CONTRIBUTING.md](CONTRIBUTING.md), [AGENTS.md](AGENTS.md), the [project constitution](.specify/memory/constitution.md), and the [.specify guide](.specify/README.md). GitHub Copilot users can use the installed Spec-Kit skills in [.github/skills](.github/skills) to create a specification, resolve open questions, plan the implementation, break it into tasks, implement the approved scope, and converge or review the result.
+
+Specifications are stored under `specs/<feature>/`. This process is documentation-only scaffolding and does not add GitHub Actions workflows.
+
 ## Build requirements
 
 - Gradle `9.4.0` via the checked-in Gradle Wrapper (`./gradlew`)
