@@ -1,3 +1,13 @@
+<!--
+Sync Impact Report
+- Version: initial -> 1.0.0
+- Modified principles: None
+- Added sections: Core Principles, Engineering Standards, Spec-Driven Workflow, Governance
+- Removed sections: None
+- Templates requiring updates: None
+- Follow-up TODOs: None
+-->
+
 # Constellation Mobile SDK Constitution
 
 ## Core Principles
