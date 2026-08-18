@@ -65,7 +65,18 @@ fun HighlightedFieldValue(
         else -> rawLabel to rawValue
     }
     when (displayValue) {
-        is AnnotatedString -> FieldValue(displayLabel, displayValue, valueFontSize, valueFontWeight)
-        is String -> FieldValue(displayLabel, displayValue, valueFontSize, valueFontWeight)
+        is AnnotatedString -> FieldValue(
+            displayLabel,
+            displayValue,
+            valueFontSize = valueFontSize,
+            valueFontWeight = valueFontWeight
+        )
+
+        is String -> FieldValue(
+            displayLabel,
+            displayValue,
+            valueFontSize = valueFontSize,
+            valueFontWeight = valueFontWeight
+        )
     }
 }

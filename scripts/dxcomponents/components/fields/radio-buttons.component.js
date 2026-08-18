@@ -1,9 +1,43 @@
-import { PicklistBaseComponent } from "./picklist-base.component.js";
+import {PicklistBaseComponent} from "./picklist-base.component.js";
 
 export class RadioButtonsComponent extends PicklistBaseComponent {
-    updateSelf() {
-        this.updateBaseProps();
+    selectableCardComponent;
+
+    init() {
         const configProps = this.pConn.resolveConfigProps(this.pConn.getConfigProps());
+        if (configProps.variant === 'card') {
+            this.type = 'CardRadioButtons';
+        }
+        super.init();
+    }
+
+    destroy() {
+        this.selectableCardComponent?.destroy();
+        this.selectableCardComponent = undefined;
+        super.destroy();
+    }
+
+    updateSelf() {
+        const configProps = this.pConn.resolveConfigProps(this.pConn.getConfigProps());
+        this.updateBaseProps();
+        this.propName = this.pConn.getStateProps().value;
+        this.props.options = []
+        if (configProps.variant === 'card') {
+            if (this.selectableCardComponent) {
+                this.selectableCardComponent.update(this.pConn, 'radio');
+            } else {
+                this.selectableCardComponent = this.componentsManager.create("SelectableCard", [this.pConn, 'radio']);
+                this.selectableCardComponent.init();
+            }
+            this.props.cardComponentId = this.selectableCardComponent.compId;
+            this.props.inlineDisplay = configProps.inlineDisplay;
+        } else {
+            this.updateRadioButtonsProperties(configProps);
+        }
+        this.componentsManager.onComponentPropsUpdate(this);
+    }
+
+    updateRadioButtonsProperties(configProps) {
         const options = this.utils.getOptionList(configProps, this.pConn.getDataObject()).map((option) => {
             return { key: option.key, text: option.value };
         });
@@ -30,8 +64,5 @@ export class RadioButtonsComponent extends PicklistBaseComponent {
             );
             return { key: option.key.toString(), label: localizedValue.toString() };
         });
-
-        this.propName = this.pConn.getStateProps().value;
-        this.componentsManager.onComponentPropsUpdate(this);
     }
 }

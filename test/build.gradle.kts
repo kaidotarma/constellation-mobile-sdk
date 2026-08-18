@@ -50,18 +50,18 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(libs.kotlin.test)
-                implementation(libs.compose.runtime)
                 implementation(libs.compose.components.resources)
+                implementation(libs.compose.runtime)
+                implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.serialization.json)
             }
         }
 
         commonTest {
             dependencies {
+                implementation(project(":core"))
                 implementation(libs.kotlin.test)
                 implementation(libs.kotlinx.coroutines.core)
-                implementation(project(":core"))
             }
         }
 
@@ -73,11 +73,11 @@ kotlin {
 
         getByName("androidDeviceTest") {
             dependencies {
-                implementation(libs.androidx.test.runner)
+                implementation(project(":core"))
+                implementation(project(":engine-webview"))
                 implementation(libs.androidx.test.core)
                 implementation(libs.androidx.test.junit)
-                implementation(project(":engine-webview"))
-                implementation(project(":core"))
+                implementation(libs.androidx.test.runner)
             }
         }
     }

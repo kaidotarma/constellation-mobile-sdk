@@ -75,7 +75,7 @@ export class ModalViewContainerComponent extends ContainerBaseComponent {
             console.log(ex);
         }
         this.stateProps = this.pConn.getStateProps();
-        this.#updateBanners()
+        this.#updateBanners();
 
         if (routingInfo && !loadingInfo) {
             const currentOrder = routingInfo.accessedOrder;
@@ -161,7 +161,7 @@ export class ModalViewContainerComponent extends ContainerBaseComponent {
         this.showModal = false;
         this.destroyChildren();
         this.#destroyBanners();
-        this.componentsManager.onComponentPropsUpdate(this);
+        this.#sendPropsUpdate();
         this.oCaseInfo = {};
     }
 

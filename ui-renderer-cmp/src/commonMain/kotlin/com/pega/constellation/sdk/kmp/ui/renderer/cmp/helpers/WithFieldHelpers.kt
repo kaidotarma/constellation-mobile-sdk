@@ -6,7 +6,7 @@ import com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form.FieldValue
 
 @Composable
 fun <T : FieldComponent> T.WithFieldHelpers(
-    displayOnly: @Composable T.() -> Unit = { FieldValue(label, value) },
+    displayOnly: @Composable T.() -> Unit = { FieldValue(label, value, disabled) },
     editable: @Composable T.() -> Unit,
 ) {
     WithVisibility(visible) {
@@ -14,6 +14,7 @@ fun <T : FieldComponent> T.WithFieldHelpers(
             displayMode = displayMode,
             label = label,
             value = value,
+            disabled = disabled,
             editable = { editable.invoke(this) },
             displayOnly = { displayOnly.invoke(this) }
         )

@@ -59,6 +59,8 @@ class DxAssignmentsHandler : MockHandler {
             assignmentId.contains("E-26028") -> handleEmbeddedDataConditionsTest(actionId)
             assignmentId.contains("D-7004") -> handleDataReferenceListOfRecordsTest(actionId)
             assignmentId.contains("D-17009") -> handleDataReferenceMultiSelectTest(request, actionId)
+            assignmentId.contains("D-32087") -> handleDataReferenceListOfRecordsCardsTest(actionId)
+            assignmentId.contains("D-32116") -> handleDataReferenceSingleRecordCardsTest(actionId)
             assignmentId.contains("D-9001") -> handleDetailsTemplateTest(actionId)
             assignmentId.contains("D-12038") -> handleDataRefSemanticLinkTest(actionId)
             assignmentId.contains("S-10029") -> handleNextPreviousTest(actionId)
@@ -110,6 +112,22 @@ class DxAssignmentsHandler : MockHandler {
         )
 
         return Asset("responses/dx/assignments/DataReferenceMultiSelectTest-1-Create.json")
+    }
+
+    private fun handleDataReferenceListOfRecordsCardsTest(actionId: String): MockResponse {
+        return when (actionId) {
+            "Create" -> Asset("responses/dx/assignments/DataReferenceMultiSelectCardsTest-1-DataPageParam.json")
+            "DataPageParamChange" -> Asset("responses/dx/assignments/DataReferenceMultiSelectCardsTest-2-HideLabelsAndImage.json")
+            "VerifyCardContent" -> Asset("responses/dx/assignments/DataReferenceMultiSelectCardsTest-3-ReadOnly.json")
+            else -> Error(404, "Invalid actionId: $actionId")
+        }
+    }
+
+    private fun handleDataReferenceSingleRecordCardsTest(actionId: String): MockResponse {
+        return when (actionId) {
+            "Create" -> Asset("responses/dx/assignments/DataReferenceSingleSelectCardsTest-1-DataPageParam.json")
+            else -> Error(404, "Invalid actionId: $actionId")
+        }
     }
 
     private fun handleEmbeddedDataRepeatingViewTest(actionId: String): MockResponse {

@@ -27,20 +27,21 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(libs.androidx.lifecycle.runtimeCompose)
+                implementation(libs.androidx.lifecycle.viewmodel)
                 implementation(libs.compose.components.resources)
+                implementation(libs.compose.dnd)
                 implementation(libs.compose.foundation)
                 implementation(libs.compose.material3)
                 implementation(libs.compose.runtime)
                 implementation(libs.compose.ui)
-                implementation(libs.androidx.lifecycle.runtimeCompose)
-                implementation(libs.androidx.lifecycle.viewmodel)
+                implementation(libs.compose.ui.tooling.preview)
+                implementation(libs.htmlconverter)
+                implementation(libs.kamel.image.default)
                 implementation(libs.kotlin.stdlib)
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.kotlinx.serialization.json)
                 implementation(libs.table.m3)
-                implementation(libs.compose.dnd)
-                implementation(libs.compose.ui.tooling.preview)
-                implementation(libs.htmlconverter)
             }
         }
 
@@ -50,12 +51,12 @@ kotlin {
                     dependencies {
                         // START: Dependencies required for @Preview to work in Android Studio
                         // https://youtrack.jetbrains.com/projects/KMT/issues/KMT-1312/Preview-not-work-in-commonMain-with-multi-module
-                        implementation(libs.compose.ui.tooling)
                         implementation(libs.androidx.activity.compose)
+                        implementation(libs.androidx.core.runtime)
                         implementation(libs.androidx.customview.poolingcontainer)
                         implementation(libs.androidx.emoji2)
                         implementation(libs.androidx.lifecycle.runtimeCompose)
-                        implementation(libs.androidx.core.runtime)
+                        implementation(libs.compose.ui.tooling)
                         implementation(libs.compose.ui.tooling.preview)
                         // END: Dependencies required for @Preview to work in Android Studio
                     }

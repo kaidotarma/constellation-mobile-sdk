@@ -35,6 +35,7 @@ import { IntegerComponent } from "../components/fields/integer.component.js";
 import { PhoneComponent } from "../components/fields/phone.component.js";
 import { RadioButtonsComponent } from "../components/fields/radio-buttons.component.js";
 import { SemanticLinkComponent } from "../components/fields/semantic-link.component.js";
+import { SelectableCardComponent } from "../components/containers/templates/selectable-card.component.js";
 import { TextAreaComponent } from "../components/fields/text-area.component.js";
 // import { TextComponent } from './_components/field/text/text.component';
 // import { TextContentComponent } from './_components/field/text-content/text-content.component';
@@ -220,6 +221,7 @@ const pegaSdkComponentMap = {
     // SemanticLink: SemanticLinkComponent,
     SimpleComboBox: SimpleComboBoxComponent,
     SemanticLink: SemanticLinkComponent,
+    SelectableCard: SelectableCardComponent,
     SimpleTable: SimpleTableComponent,
     SimpleTableManual: SimpleTableManualComponent,
     SimpleTableSelect: SimpleTableSelectComponent,

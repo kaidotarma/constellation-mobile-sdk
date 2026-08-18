@@ -25,6 +25,8 @@ export class DataReferenceComponent extends ContainerBaseComponent {
     children;
     refList;
     displayAs;
+    // Indicates first mount. Present also on web.
+    isMounting = true
 
     constructor(componentsManager, pConn) {
         super(componentsManager, pConn);
@@ -40,42 +42,6 @@ export class DataReferenceComponent extends ContainerBaseComponent {
 
         this.children = this.pConn.getChildren();
         this.#updateSelf();
-
-        const shouldPreloadOptions =
-            (['Dropdown', 'Checkbox'].includes(this.firstChildMeta?.type)) &&
-            this.rawViewMetadata.config?.parameters &&
-            !this.firstChildMeta.config.deferDatasource;
-
-        if (shouldPreloadOptions) {
-            const { value, key, text } = this.firstChildMeta.config.datasource.fields;
-            PCore.getDataApiUtils()
-                .getData(this.refList, { dataViewParameters: this.parameters }, "")
-                .then((res) => {
-                    if (!this.alive) {
-                        return;
-                    }
-                    if (res.data.data !== null) {
-                        const ddDataSource = res.data.data
-                            .map((listItem) => ({
-                                key: listItem[key.split(" .", 2)[1]],
-                                text: listItem[text.split(" .", 2)[1]],
-                                value: listItem[value.split(" .", 2)[1]],
-                            }))
-                            .filter((item) => item.key);
-                        // Filtering out undefined entries that will break preview
-                        this.dropDownDataSource = ddDataSource;
-                        this.#updateSelf();
-                    } else {
-                        const ddDataSource = [];
-                        this.dropDownDataSource = ddDataSource;
-                    }
-                })
-                .catch(() => {
-                    return Promise.resolve({
-                        data: { data: [] },
-                    });
-                });
-        }
     }
 
     update(pConn) {
@@ -92,9 +58,29 @@ export class DataReferenceComponent extends ContainerBaseComponent {
     }
 
     #updateSelf() {
-        // Update properties based on configProps
+        const newRawViewMetadata = this.pConn.getRawMetadata();
+        const newParameters = this.pConn.getConfigProps().parameters;
+        if (this.#parametersChanged(newParameters, newRawViewMetadata)) {
+            const newRefList = newRawViewMetadata.config.referenceList;
+            this.#loadOptions(newRefList, newParameters, newRawViewMetadata);
+        }
+        this.#updateProperties()
+        this.isMounting = false;
+    }
+
+    #updateProperties() {
         const theConfigProps = this.pConn.getConfigProps();
-        this.#updatePropertiesFromProps(theConfigProps);
+        const label = theConfigProps.label;
+        const showLabel = theConfigProps.showLabel;
+        this.referenceType = theConfigProps.referenceType;
+        this.selectionMode = theConfigProps.selectionMode;
+        this.parameters = theConfigProps.parameters;
+        this.hideLabel = theConfigProps.hideLabel;
+
+        this.propsToUse = { label, showLabel, ...this.pConn.getInheritedProps() };
+        if (this.propsToUse.showLabel === false) {
+            this.propsToUse.label = "";
+        }
 
         this.displayAs = theConfigProps.displayAs;
         const displayMode = theConfigProps.displayMode;
@@ -104,7 +90,7 @@ export class DataReferenceComponent extends ContainerBaseComponent {
         this.refList = this.rawViewMetadata.config.referenceList;
         this.canBeChangedInReviewMode =
             theConfigProps.allowAndPersistChangesInReviewMode &&
-            (displayAs === "autocomplete" || displayAs === "dropdown");
+            (this.displayAs === "autocomplete" || this.displayAs === "dropdown");
         this.isDisplayModeEnabled = ["DISPLAY_ONLY", "STACKED_LARGE_VAL"].includes(displayMode);
 
         if (this.#shouldDisplayOnlySingle()) {
@@ -127,7 +113,7 @@ export class DataReferenceComponent extends ContainerBaseComponent {
                 delete this.firstChildMeta.config.readOnly;
             }
 
-            this.#setChildDatasource();
+            this.#setChildDatasource(theConfigProps);
 
             if (this.firstChildMeta?.type === "Dropdown" && !this.firstChildMeta.config.deferDatasource) {
                 this.firstChildMeta.config.datasource.source = this.rawViewMetadata.config?.parameters
@@ -155,6 +141,58 @@ export class DataReferenceComponent extends ContainerBaseComponent {
             this.reconcileChildren(this.children);
             this.#sendPropsUpdate();
         }
+    }
+
+    #parametersChanged(newParameters, newRawViewMetadata) {
+        return JSON.stringify(newParameters) !== JSON.stringify(this.parameters) ||
+            JSON.stringify(newRawViewMetadata) !== JSON.stringify(this.rawViewMetadata)
+    }
+
+    #loadOptions(refList, parameters, rawViewMetadata) {
+        const firstChildMeta = rawViewMetadata.children[0];
+        const firstChildPConnect = this.pConn.getChildren()[0].getPConnect();
+
+        const shouldLoadOptions =
+            (['Dropdown', 'Checkbox', 'RadioButtons'].includes(firstChildMeta?.type)) &&
+            rawViewMetadata.config?.parameters &&
+            !firstChildMeta.config.deferDatasource &&
+            (
+                firstChildMeta.config.variant !== 'card' ||
+                (firstChildMeta.config.variant === 'card' &&
+                    (!this.isMounting || (this.isMounting && !firstChildPConnect?.getSharedDataPageForReferenceList())))
+            )
+        if (!shouldLoadOptions) return;
+
+        const { value = "", key = "", text = "" } = firstChildMeta.config?.datasource?.fields ?? {};
+        PCore.getDataApiUtils()
+            .getData(refList, { dataViewParameters: parameters })
+            .then((res) => {
+                if (!this.alive) {
+                    return;
+                }
+                if (res.data.data !== null) {
+                    const ddDataSource = firstChildMeta.config.datasource.filterDownloadedFields
+                        ? res.data.data
+                        : res.data.data
+                            .map((listItem) => ({
+                                key: listItem[key.split(' .', 2)[1]],
+                                text: listItem[text.split(' .', 2)[1]],
+                                value: listItem[value.split(' .', 2)[1]]
+                            }))
+                            .filter((item) => item.key); // Filtering out undefined entries
+                    this.dropDownDataSource = ddDataSource;
+                    this.#updateProperties()
+                } else {
+                    const ddDataSource = [];
+                    this.dropDownDataSource = ddDataSource;
+                    this.#updateProperties()
+                }
+            })
+            .catch(() => {
+                return Promise.resolve({
+                    data: { data: [] },
+                });
+            });
     }
 
     #sendPropsUpdate() {
@@ -231,17 +269,7 @@ export class DataReferenceComponent extends ContainerBaseComponent {
     }
 
     #updatePropertiesFromProps(theConfigProps) {
-        const label = theConfigProps.label;
-        const showLabel = theConfigProps.showLabel;
-        this.referenceType = theConfigProps.referenceType;
-        this.selectionMode = theConfigProps.selectionMode;
-        this.parameters = theConfigProps.parameters;
-        this.hideLabel = theConfigProps.hideLabel;
 
-        this.propsToUse = { label, showLabel, ...this.pConn.getInheritedProps() };
-        if (this.propsToUse.showLabel === false) {
-            this.propsToUse.label = "";
-        }
     }
 
     #generateChildrenToRender() {
@@ -254,15 +282,19 @@ export class DataReferenceComponent extends ContainerBaseComponent {
         }
     }
 
-
-
-    #setChildDatasource() {
+    #setChildDatasource(theConfigProps) {
+        if (this.firstChildMeta == null) return;
         const { type } = this.firstChildMeta;
-
         if (type === 'AutoComplete') {
             this.#setAutoCompleteDatasource();
-        } else if (['Dropdown', 'Checkbox'].includes(type)) {
-            this.#setDropdownOrCheckboxDatasource();
+        } else if (['Dropdown', 'Checkbox', 'RadioButtons'].includes(type)) {
+            this.#setSelectableDatasource();
+        }
+        const variant = this.firstChildMeta.config.variant;
+        const isCardVariant = ['Checkbox', 'RadioButtons'].includes(type) && variant === 'card'
+        if (isCardVariant) {
+            this.firstChildMeta.config.imagePosition = theConfigProps.imagePosition;
+            this.firstChildMeta.config.showImageDescription = theConfigProps.showImageDescription;
         }
     }
 
@@ -276,17 +308,24 @@ export class DataReferenceComponent extends ContainerBaseComponent {
         }
     }
 
-    #setDropdownOrCheckboxDatasource() {
+    #setSelectableDatasource() {
         const { config } = this.firstChildMeta;
 
         if (!config.datasource || config.deferDatasource) {
             return;
         }
+        const firstChildPConnect = this.pConn.getChildren()[0].getPConnect();
+        const isDeferDataPageCallEnabled =
+            this.rawViewMetadata.config?.parameters &&
+            config.variant === 'card' &&
+            this.isMounting &&
+            !firstChildPConnect?.getSharedDataPageForReferenceList();
 
-        const hasParameters = this.rawViewMetadata.config?.parameters;
-        config.datasource.source = hasParameters
-            ? this.dropDownDataSource
-            : `@DATASOURCE ${this.refList}.pxResults`;
+        config.datasource.source =
+            (config.variant === 'card' && (this.dropDownDataSource || isDeferDataPageCallEnabled)) ||
+            (config.variant !== 'card' && this.rawViewMetadata.config?.parameters)
+                ? this.dropDownDataSource
+                : `@DATASOURCE ${this.refList}.pxResults`;
     }
 
     // Re-create first child with overridden props
@@ -329,8 +368,8 @@ export class DataReferenceComponent extends ContainerBaseComponent {
     #setReadOnlyDisplayFlags() {
         const isSingleMode = this.selectionMode === SELECTION_MODE.SINGLE;
 
-        const shouldDisplayOnlySingle = isSingleMode && 
-            (this.displayAs === 'readonly' || this.isDisplayModeEnabled) && 
+        const shouldDisplayOnlySingle = isSingleMode &&
+            (this.displayAs === 'readonly' || this.isDisplayModeEnabled) &&
             !this.canBeChangedInReviewMode;
 
         if (shouldDisplayOnlySingle) {

@@ -15,7 +15,7 @@ class CurrencyRenderer : ComponentRenderer<CurrencyComponent> {
             displayOnly = {
                 val prefix = if (showIsoCode) isoCode else getCurrencySymbol(isoCode)
                 val displayValue = if (prefix.isNotEmpty()) "$prefix $value" else value
-                FieldValue(label, displayValue)
+                FieldValue(label, displayValue, disabled)
             },
             editable = {
                 Currency(

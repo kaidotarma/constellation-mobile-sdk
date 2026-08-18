@@ -13,7 +13,7 @@ class SimpleComboBoxRenderer : ComponentRenderer<SimpleComboBoxComponent> {
     override fun SimpleComboBoxComponent.Render() {
         WithFieldHelpers(
             displayOnly = {
-                FieldValue(label, options.firstOrNull { it.key == value }?.label ?: "")
+                FieldValue(label, options.firstOrNull { it.key == value }?.label ?: "", disabled)
             },
             editable = {
                 Dropdown(

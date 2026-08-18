@@ -5,6 +5,8 @@ import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.AlertBanner
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.Assignment
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.AssignmentCard
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.AutoComplete
+import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.CardCheckboxGroup
+import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.CardRadioButtons
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.Checkbox
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.Currency
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.DataReference
@@ -28,6 +30,7 @@ import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.Phone
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.RadioButtons
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.Region
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.RichText
+import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.SelectableCard
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.SemanticLink
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.RootContainer
 import com.pega.constellation.sdk.kmp.core.components.ComponentTypes.SimpleComboBox
@@ -71,6 +74,7 @@ import com.pega.constellation.sdk.kmp.core.components.fields.IntegerComponent
 import com.pega.constellation.sdk.kmp.core.components.fields.PhoneComponent
 import com.pega.constellation.sdk.kmp.core.components.fields.RadioButtonsComponent
 import com.pega.constellation.sdk.kmp.core.components.fields.RichTextComponent
+import com.pega.constellation.sdk.kmp.core.components.containers.SelectableCardComponent
 import com.pega.constellation.sdk.kmp.core.components.fields.SimpleComboBoxComponent
 import com.pega.constellation.sdk.kmp.core.components.fields.SemanticLinkComponent
 import com.pega.constellation.sdk.kmp.core.components.fields.TextAreaComponent
@@ -80,6 +84,8 @@ import com.pega.constellation.sdk.kmp.core.components.fields.UrlComponent
 import com.pega.constellation.sdk.kmp.core.components.widgets.ActionButtonsComponent
 import com.pega.constellation.sdk.kmp.core.components.widgets.AlertBannerComponent
 import com.pega.constellation.sdk.kmp.core.components.fields.AutoCompleteComponent
+import com.pega.constellation.sdk.kmp.core.components.fields.CardCheckboxGroupComponent
+import com.pega.constellation.sdk.kmp.core.components.fields.CardRadioButtonsComponent
 import com.pega.constellation.sdk.kmp.core.components.fields.MultiselectComponent
 import com.pega.constellation.sdk.kmp.core.components.widgets.UnsupportedComponent
 import com.pega.constellation.sdk.kmp.core.api.ComponentDefinition as Def
@@ -97,6 +103,8 @@ object ComponentRegistry {
         Def(Assignment) { AssignmentComponent(it) },
         Def(AssignmentCard) { AssignmentCardComponent(it) },
         Def(AutoComplete) { AutoCompleteComponent(it) },
+        Def(CardCheckboxGroup) { CardCheckboxGroupComponent(it) },
+        Def(CardRadioButtons) { CardRadioButtonsComponent(it) },
         Def(Checkbox) { CheckboxComponent(it) },
         Def(Currency) { CurrencyComponent(it) },
         Def(Date) { DateComponent(it) },
@@ -126,6 +134,7 @@ object ComponentRegistry {
         Def(SimpleTableSelect) { SimpleTableSelectComponent(it) },
         Def(TextArea) { TextAreaComponent(it) },
         Def(RichText) { RichTextComponent(it) },
+        Def(SelectableCard) { SelectableCardComponent(it) },
         Def(SimpleComboBox) { SimpleComboBoxComponent(it) },
         Def(TextInput) { TextInputComponent(it) },
         Def(Time) { TimeComponent(it) },

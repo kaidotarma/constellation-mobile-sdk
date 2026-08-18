@@ -24,7 +24,7 @@ class TimeRenderer : ComponentRenderer<TimeComponent> {
         WithFieldHelpers(
             displayOnly = {
                 val is24Hour = ClockFormat.from(clockFormat).is24Hour()
-                FieldValue(label, value.asLocalTimeOrNull()?.parse(is24Hour).orEmpty())
+                FieldValue(label, value.asLocalTimeOrNull()?.parse(is24Hour).orEmpty(), disabled)
             },
             editable = {
                 Time(

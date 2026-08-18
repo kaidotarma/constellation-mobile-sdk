@@ -1,0 +1,14 @@
+{
+  "fetchDateTime": "2026-04-07T10:11:20.236Z",
+  "pxObjClass": "Pega-API-DataExploration-Data",
+  "resultCount": 1,
+  "data": [{
+    "Brand": "Fiat",
+    "pxObjClass": "OI1OYV-Marco2-Data-Car",
+    "Price": 10000.000000000,
+    "Model": "Panda",
+    "pyGUID": "ddbe3b2a-1ffa-4685-8c14-356349906617"
+  }],
+  "hasMoreResults": false,
+  "pageSize": 1
+}

@@ -17,11 +17,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form.internal.HelperText
+import com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form.utils.getTextColor
 
 @Composable
 fun RadioButtons(
@@ -89,8 +89,7 @@ fun RadioButton(
             text = option.label,
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(start = 16.dp),
-            color = if (disabled) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-                else MaterialTheme.colorScheme.onSurface
+            color = getTextColor(disabled)
         )
     }
 }

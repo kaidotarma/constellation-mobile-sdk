@@ -1,7 +1,6 @@
 package com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,29 +11,33 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form.utils.getTextColor
 
 @Composable
 fun FieldValue(
     label: String,
     value: String,
+    disabled: Boolean = false,
     valueFontSize: TextUnit = 14.sp,
     valueFontWeight: FontWeight = FontWeight.Normal
 ) {
-    FieldValue(label, AnnotatedString(value), valueFontSize, valueFontWeight)
+    FieldValue(label, AnnotatedString(value), disabled, valueFontSize, valueFontWeight)
 }
 
 @Composable
 fun FieldValue(
     label: String,
     value: AnnotatedString,
+    disabled: Boolean = false,
     valueFontSize: TextUnit = 14.sp,
-    valueFontWeight: FontWeight = FontWeight.Normal
+    valueFontWeight: FontWeight = FontWeight.Normal,
 ) {
     Column(modifier = Modifier.padding(bottom = 8.dp)) {
+        val textColor = getTextColor(disabled)
         if (label.trim().isNotEmpty()) {
             Text(label, color = Color.Gray)
         }
         val annotated = if (value.trim().isNotEmpty()) value else AnnotatedString("---")
-        Text(annotated, fontSize = valueFontSize, fontWeight = valueFontWeight)
+        Text(annotated, color = textColor, fontSize = valueFontSize, fontWeight = valueFontWeight)
     }
 }

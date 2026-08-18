@@ -13,11 +13,12 @@ androidx-test = "1.7.0"
 androidx-test-junit = "1.3.0"
 androidx-test-orchestrator = "1.6.1"
 compose-hot-reload = "1.1.1"
-compose-multiplatform = "1.10.3" # 1.11.0 does not support iosX64 target
 compose-material3 = "1.9.0" # pinned manually since compose.material3 accessor is deprecated; re-verify against compose-multiplatform when bumping either version
+compose-multiplatform = "1.10.3" # 1.11.0 does not support iosX64 target
 compose-navigation = "2.9.2"
 dnd = "0.4.0"
 htmlconverter = "1.1.1"
+kamel = "1.0.9"
 kotlin = "2.4.0"
 kotlinx-coroutines = "1.11.0"
 kotlinx-datetime = "0.8.0"
@@ -32,10 +33,10 @@ webkit = "1.16.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
-androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidx-datastore" }
-androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 androidx-core-runtime = { module = "androidx.arch.core:core-runtime", version.ref = "androidx-core-runtime" }
 androidx-customview-poolingcontainer = { module = "androidx.customview:customview-poolingcontainer", version.ref = "androidx-customview-poolingcontainer" }
+androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidx-datastore" }
+androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
 androidx-emoji2 = { module = "androidx.emoji2:emoji2", version.ref = "androidx-emoji2" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
@@ -50,15 +51,17 @@ androidx-ui-test-junit4-android = { group = "androidx.compose.ui", name = "ui-te
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 androidx-webkit = { module = "androidx.webkit:webkit", version.ref = "webkit" }
-compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
-compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
-compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose-multiplatform" }
 compose-components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "compose-multiplatform" }
+compose-dnd = { module = "com.mohamedrejeb.dnd:compose-dnd", version.ref = "dnd" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "compose-multiplatform" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose-material3" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "compose-multiplatform" }
 compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-multiplatform" }
+compose-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "compose-multiplatform" }
+compose-ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "compose-multiplatform" }
+compose-ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "compose-multiplatform" }
 htmlconverter = { module = "be.digitalia.compose.htmlconverter:htmlconverter", version.ref = "htmlconverter" }
+kamel-image-default = { module = "media.kamel:kamel-image-default", version.ref = "kamel" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
@@ -72,7 +75,6 @@ oidc-appsupport = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-appsu
 oidc-tokenstore = { module = "io.github.kalinjul.kotlin.multiplatform:oidc-tokenstore", version.ref = "oidc" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 table-m3 = { module = "io.github.windedge.table:table-m3", version.ref = "table" }
-compose-dnd = { module = "com.mohamedrejeb.dnd:compose-dnd", version.ref = "dnd" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

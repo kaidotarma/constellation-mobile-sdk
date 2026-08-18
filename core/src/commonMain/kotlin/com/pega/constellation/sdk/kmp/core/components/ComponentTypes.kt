@@ -31,6 +31,8 @@ object ComponentTypes {
 
     // fields
     val Checkbox = ComponentType("Checkbox")
+    val CardCheckboxGroup = ComponentType("CardCheckboxGroup")
+    val CardRadioButtons = ComponentType("CardRadioButtons")
     val Currency = ComponentType("Currency")
     val Date = ComponentType("Date")
     val DateTime = ComponentType("DateTime")
@@ -41,6 +43,7 @@ object ComponentTypes {
     val Phone = ComponentType("Phone")
     val RadioButtons = ComponentType("RadioButtons")
     val RichText = ComponentType("RichText")
+    val SelectableCard = ComponentType("SelectableCard")
     val SimpleComboBox = ComponentType("SimpleComboBox")
     val SemanticLink = ComponentType("SemanticLink")
     val TextArea = ComponentType("TextArea")

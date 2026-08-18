@@ -23,7 +23,7 @@ fun RichText(
 ) {
     if (readOnly) {
         // Read-only RichText renders on web as display-only
-        RichTextFieldValue(label, value)
+        RichTextFieldValue(label, value, disabled)
     } else {
         Column(modifier = modifier) {
             // not allowing editing in RichText for now
@@ -58,8 +58,8 @@ fun RichText(
 }
 
 @Composable
-fun RichTextFieldValue(label: String, value: String) {
-    FieldValue(label, rememberAnnotated(value))
+fun RichTextFieldValue(label: String, value: String, disabled: Boolean = false) {
+    FieldValue(label, rememberAnnotated(value), disabled)
 }
 
 @Composable

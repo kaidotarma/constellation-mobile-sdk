@@ -12,7 +12,7 @@ class RichTextRenderer : ComponentRenderer<RichTextComponent> {
     override fun RichTextComponent.Render() {
         WithFieldHelpers(
             displayOnly = {
-                RichTextFieldValue(label, value)
+                RichTextFieldValue(label, value, disabled)
             },
             editable = {
                 RichText(

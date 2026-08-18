@@ -10,8 +10,9 @@ fun WithDisplayMode(
     displayMode: DisplayMode,
     label: String,
     value: String,
+    disabled: Boolean = false,
     editable: @Composable () -> Unit,
-    displayOnly: @Composable () -> Unit = { FieldValue(label, value) }
+    displayOnly: @Composable () -> Unit = { FieldValue(label, value, disabled) }
 ) {
     when (displayMode) {
         DisplayMode.EDITABLE -> editable.invoke()

@@ -86,4 +86,57 @@ export class Utils {
     static setOkToInitFlowContainer(okToInit) {
         sdkSessionStorage.setItem("okToInitFlowContainer", okToInit);
     }
+
+    resolveReferenceFields(item, hideFieldLabels, recordKey, pConnect, disabled) {
+        const presets = (pConnect.getRawMetadata()?.config)?.presets ?? [];
+
+        const presetChildren = presets[0]?.children?.[0]?.children ?? [];
+
+        const maxFields = 5;
+        return presetChildren.slice(0, maxFields).map((preset, index) => {
+            const fieldMeta = {
+                meta: {
+                    ...preset,
+                    config: {
+                        ...preset.config,
+                        displayMode: 'DISPLAY_ONLY',
+                        disabled: disabled
+                    }
+                },
+                useCustomContext: item
+            };
+            const configObj = PCore.createPConnect(fieldMeta);
+            const meta = configObj.getPConnect().getMetadata();
+            const fieldInfo = meta ? this.prepareComponentInCaseSummary(meta, configObj.getPConnect) : {};
+            return hideFieldLabels
+                ? { id: `${item[recordKey]} - ${index}`, value: fieldInfo.value }
+                : {
+                    id: `${item[recordKey]} - ${index}`,
+                    name: fieldInfo.name,
+                    value: fieldInfo.value,
+                    type: preset.type
+                };
+        });
+    }
+
+    prepareComponentInCaseSummary(pConnectMeta, getPConnect) {
+        const { config, children } = pConnectMeta;
+        const pConnect = getPConnect();
+
+        const caseSummaryComponentObject = {};
+
+        caseSummaryComponentObject.name = pConnect.resolveConfigProps({ label: config.label }).label;
+
+        const { type } = pConnectMeta;
+        const createdComponent = pConnect.createComponent({
+            type,
+            children: children ? [...children] : [],
+            config: {
+                ...config
+            }
+        });
+
+        caseSummaryComponentObject.value = createdComponent;
+        return caseSummaryComponentObject;
+    }
 }

@@ -16,7 +16,7 @@ class MultiselectRenderer : ComponentRenderer<MultiselectComponent> {
                 val selectedLabels = options
                     .filter { selectedKeys.contains(it.key) }
                     .joinToString(", ") { it.label }
-                FieldValue(label, selectedLabels)
+                FieldValue(label, selectedLabels, disabled)
             },
             editable = {
                 Multiselect(

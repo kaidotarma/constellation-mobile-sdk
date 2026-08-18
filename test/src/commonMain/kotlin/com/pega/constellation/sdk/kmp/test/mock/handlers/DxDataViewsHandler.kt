@@ -21,7 +21,7 @@ class DxDataViewsHandler(private val pegaVersion: PegaVersion) : MockHandler {
         return when (dataViewId) {
             "D_pxBootstrapConfig" -> Asset("responses/dx/data_views/D_pxBootstrapConfig-${pegaVersion.coreJsVersionString}.json")
             "D_CarsList" -> handleCarsList(request.body ?: "")
-            "D_CarsList2" -> Asset("responses/dx/data_views/D_CarsList2.json")
+            "D_CarsList2" -> handleCarsList2(request.body ?: "")
             "D_SampleCaseTypeList" -> Asset("responses/dx/data_views/D_SampleCaseTypeList.json")
             "D_ListOfFilteredEncryptionKeys" -> handleEncryptionKeysList(request.body ?: "")
             "D_EncryptionKeysList" -> Asset("responses/dx/data_views/D_EncryptionKeysList-all.json")
@@ -54,6 +54,22 @@ class DxDataViewsHandler(private val pegaVersion: PegaVersion) : MockHandler {
             Asset("responses/dx/data_views/D_CarsList-Ford.json")
         } else {
             Asset("responses/dx/data_views/D_CarsList.json")
+        }
+    }
+
+    private fun handleCarsList2(body: String): MockResponse {
+        val brand = runCatching {
+            Json.parseToJsonElement(body).jsonObject["dataViewParameters"]
+                ?.jsonObject
+                ?.get("brand")
+                ?.jsonPrimitive
+                ?.content
+        }.getOrNull()
+        return when (brand) {
+            null, "" -> Asset("responses/dx/data_views/D_CarsList2.json")
+            "Ford" -> Asset("responses/dx/data_views/D_CarsList2-Ford.json")
+            "Fiat" -> Asset("responses/dx/data_views/D_CarsList2-Fiat.json")
+            else -> Error(404, "Unexpected filter value $brand")
         }
     }
 }

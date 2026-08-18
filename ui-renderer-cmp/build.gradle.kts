@@ -30,6 +30,7 @@ kotlin {
                 implementation(project(":core"))
                 implementation(project(":ui-components-cmp"))
                 implementation(libs.compose.components.resources)
+                implementation(libs.compose.dnd)
                 implementation(libs.compose.foundation)
                 implementation(libs.compose.material3)
                 implementation(libs.compose.runtime)
@@ -39,7 +40,6 @@ kotlin {
                 implementation(libs.kotlinx.datetime)
                 implementation(libs.ksoup.http.parser)
                 implementation(libs.table.m3)
-                implementation(libs.compose.dnd)
             }
         }
     }

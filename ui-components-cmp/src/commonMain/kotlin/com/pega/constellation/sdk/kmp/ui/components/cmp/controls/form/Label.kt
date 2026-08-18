@@ -8,6 +8,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
+import com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form.utils.TEXT_ALPHA
+import com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form.utils.getTextColor
 
 @Composable
 fun Label(
@@ -21,10 +23,9 @@ fun Label(
 ) {
     if (hideLabel || label.isEmpty()) return
 
-    val textColor = if (disabled) MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
-        else MaterialTheme.colorScheme.onSurface
+    val textColor = getTextColor(disabled)
     val asteriskColor = when {
-        disabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
+        disabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = TEXT_ALPHA)
         readOnly -> MaterialTheme.colorScheme.onSurface
         else -> MaterialTheme.colorScheme.error
     }

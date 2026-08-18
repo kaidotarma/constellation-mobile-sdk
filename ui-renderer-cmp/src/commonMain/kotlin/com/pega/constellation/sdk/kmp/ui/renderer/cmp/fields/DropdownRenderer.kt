@@ -13,7 +13,7 @@ class DropdownRenderer : ComponentRenderer<DropdownComponent> {
     override fun DropdownComponent.Render() {
         WithFieldHelpers(
             displayOnly = {
-                FieldValue(label, options.firstOrNull { it.key == value }?.label ?: "")
+                FieldValue(label, options.firstOrNull { it.key == value }?.label ?: "", disabled)
             },
             editable = {
                 Dropdown(

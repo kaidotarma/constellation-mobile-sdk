@@ -34,7 +34,7 @@ class DateTimeRenderer : ComponentRenderer<DateTimeComponent> {
             displayOnly = {
                 val value = value.asLocalDateTimeOrNull()?.plusOffset(timeZoneMinutesOffset)
                 val is24Hour = ClockFormat.from(clockFormat).is24Hour()
-                FieldValue(label, value?.parse(is24Hour) ?: "")
+                FieldValue(label, value?.parse(is24Hour) ?: "", disabled)
             },
             editable = {
                 DateTime(
