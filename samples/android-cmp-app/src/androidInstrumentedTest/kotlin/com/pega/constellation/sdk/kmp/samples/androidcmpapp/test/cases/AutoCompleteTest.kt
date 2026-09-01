@@ -5,9 +5,11 @@ import androidx.compose.ui.test.isFocused
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextReplacement
 import com.pega.constellation.sdk.kmp.samples.androidcmpapp.test.ComposeTest
 import com.pega.constellation.sdk.kmp.samples.androidcmpapp.test.runAndroidTest
 import com.pega.constellation.sdk.kmp.samples.androidcmpapp.test.waitForNode
+import com.pega.constellation.sdk.kmp.samples.androidcmpapp.test.waitForNodes
 import com.pega.constellation.sdk.kmp.test.mock.PegaVersion
 import kotlin.test.Test
 
@@ -18,7 +20,6 @@ class AutoCompleteTest : ComposeTest() {
         setupApp("OFV0MW-Marco-Work-AutoCompleteTest", pegaVersion = PegaVersion.v25_1)
 
         onNodeWithText("New Service").performClick()
-
         waitForNode("AutoComplete (", substring = true)
 
         onNodeWithText("Car brand").performClick()
@@ -42,6 +43,18 @@ class AutoCompleteTest : ComposeTest() {
         onNodeWithText("Ford").performClick()
         waitForNode("Ford")
 
+        // Reopening must reset the transient query and show all three brand options.
+        onNodeWithText("Car brand").performClick()
+        waitForNodes("Ford", count = 2) // selected field value plus the reopened option
+        waitForNode("Audi")
+        waitForNode("Fiat")
+
+        // Explicitly replacing the field text applies the new filter query.
+        onNode(isFocused()).performTextReplacement("Fi")
+        waitForNode("Fiat")
+        onNodeWithText("Ford").assertDoesNotExist()
+        onNodeWithText("Audi").assertDoesNotExist()
+        onNodeWithText("Car brand").performClick() // close filtered dropdown
         onNodeWithText("Car Model").performClick()
         waitForNode("Focus")
         onNodeWithText("Corolla").assertDoesNotExist()

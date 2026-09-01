@@ -39,43 +39,53 @@ fun AutoComplete(
     onValueChange: (String) -> Unit = {}
 ) {
     var expanded by remember { mutableStateOf(false) }
-    var searchText by remember { mutableStateOf(TextFieldValue("")) }
+    var inputValue by remember { mutableStateOf(TextFieldValue("")) }
+    var filterQuery by remember { mutableStateOf<String?>(null) }
+    var wasFocused by remember { mutableStateOf(false) }
 
     LaunchedEffect(value, options) {
-        searchText = options.getSelectedLabel(value)
+        if (filterQuery == null) {
+            inputValue = options.getSelectedLabel(value)
+        }
     }
 
-    val filteredOptions = remember(searchText.text, options) {
-        if (searchText.text.isEmpty()) {
+    val filteredOptions = remember(filterQuery, options) {
+        val query = filterQuery
+        if (query.isNullOrEmpty()) {
             options
         } else {
-            options.filter { it.label.contains(searchText.text, ignoreCase = true) }
+            options.filter { it.label.contains(query, ignoreCase = true) }
         }
     }
 
     Column(modifier = modifier) {
         ExposedDropdownMenuBox(
             expanded = expanded,
-            onExpandedChange = {
+            onExpandedChange = { newExpanded ->
                 if (disabled || readOnly) return@ExposedDropdownMenuBox
-                expanded = !expanded
+                expanded = newExpanded
             }
         ) {
             OutlinedTextField(
-                value = searchText,
+                value = inputValue,
                 onValueChange = {
-                    searchText = it
+                    inputValue = it
+                    filterQuery = it.text
                     expanded = true
                 },
                 modifier = Modifier
                     .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryEditable)
                     .fillMaxWidth()
-                    .onFocusChanged { isFocused ->
-                        when {
-                            isFocused.isFocused -> {}
-                            searchText.text.isEmpty() -> onValueChange("")
-                            !isFocused.isFocused -> searchText = options.getSelectedLabel(value)
+                    .onFocusChanged { focusState ->
+                        if (wasFocused && !focusState.isFocused) {
+                            expanded = false
+                            filterQuery = null
+                            if (inputValue.text.isEmpty() && value.isNotEmpty()) {
+                                onValueChange("")
+                            }
+                            inputValue = options.getSelectedLabel(value)
                         }
+                        wasFocused = focusState.isFocused
                     },
                 enabled = !disabled,
                 readOnly = readOnly,
@@ -96,15 +106,18 @@ fun AutoComplete(
             if (filteredOptions.isNotEmpty()) {
                 ExposedDropdownMenu(
                     expanded = expanded,
-                    onDismissRequest = { expanded = false }
+                    onDismissRequest = {
+                        expanded = false
+                    }
                 ) {
                     filteredOptions.forEach { option ->
                         DropdownMenuItem(
                             text = { Text(option.label) },
                             onClick = {
-                                searchText =
+                                inputValue =
                                     TextFieldValue(option.label, TextRange(option.label.length))
                                 expanded = false
+                                filterQuery = null
                                 onValueChange(option.key)
                             },
                             contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
