@@ -1,9 +1,11 @@
 package com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,6 +39,7 @@ import com.pega.constellation.sdk.kmp.ui.components.cmp.controls.form.utils.getT
 import com.pega.constellation.sdk.kmp.ui_components_cmp.generated.resources.Res
 import com.pega.constellation.sdk.kmp.ui_components_cmp.generated.resources.selectable_card_image_placeholder
 import io.kamel.image.KamelImage
+import io.kamel.image.KamelImageBox
 import io.kamel.image.asyncPainterResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -156,13 +159,13 @@ private fun SelectableCardTextContent(
 ) {
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
         val textColor = getTextColor(disabled)
-        if (!hideFieldLabels) Text(
+        Text(
             card.label,
             color = textColor,
             style = MaterialTheme.typography.titleLarge
         )
         card.fields.forEach { field ->
-            if (field.name.isEmpty()) {
+            if (hideFieldLabels || field.name.isEmpty()) {
                 Text(field.value, color = textColor)
             } else {
                 Text("${field.name}: ${field.value}", color = textColor)
@@ -205,10 +208,13 @@ private fun ContentWithImageAboveText(
     modifier: Modifier,
     content: @Composable (Modifier) -> Unit
 ) {
-    Column(modifier = modifier) {
-        SelectableCardImageView(image)
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        FullWidthSelectableCardImageView(image)
         Spacer(Modifier.height(8.dp))
-        content(Modifier.weight(1f))
+        content(Modifier.fillMaxWidth())
     }
 }
 
@@ -257,4 +263,51 @@ private fun SelectableCardImageView(image: SelectableCardImage, modifier: Modifi
             }
         )
     }
+}
+
+@Composable
+private fun FullWidthSelectableCardImageView(
+    image: SelectableCardImage,
+    modifier: Modifier = Modifier
+) {
+    val imageShape = MaterialTheme.shapes.medium
+    KamelImageBox(
+        resource = { asyncPainterResource(image.src) },
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("selectable_card_image_${image.alt}")
+            .then(modifier)
+            .background(MaterialTheme.colorScheme.surfaceVariant, imageShape)
+            .clip(imageShape),
+        onFailure = {
+            Box(
+                modifier = Modifier.fillMaxWidth().height(144.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    painter = painterResource(Res.drawable.selectable_card_image_placeholder),
+                    contentDescription = image.alt,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        },
+        onSuccess = { painter ->
+            val intrinsicSize = painter.intrinsicSize
+            val aspectRatio = if (
+                intrinsicSize.width.isFinite() && intrinsicSize.height.isFinite() &&
+                intrinsicSize.width > 0f && intrinsicSize.height > 0f
+            ) {
+                intrinsicSize.width / intrinsicSize.height
+            } else {
+                1f
+            }
+            Image(
+                painter = painter,
+                contentDescription = image.alt,
+                modifier = Modifier.fillMaxWidth().aspectRatio(aspectRatio).clip(imageShape),
+                contentScale = ContentScale.FillWidth
+            )
+        }
+    )
 }
