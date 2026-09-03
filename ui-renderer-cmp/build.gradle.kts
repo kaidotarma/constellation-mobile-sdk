@@ -40,7 +40,6 @@ kotlin {
                 implementation(libs.ksoup.http.parser)
                 implementation(libs.table.m3)
                 implementation(libs.compose.dnd)
-                implementation(libs.kotlinx.serialization.json)
             }
         }
     }
