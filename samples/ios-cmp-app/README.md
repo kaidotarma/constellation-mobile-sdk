@@ -25,6 +25,10 @@ For more information about the configuration, please refer to the [Configuring s
 
 Now, you should be able to run the application on iOS simulator using Android Studio or XCode.
 
+The `New Service` action creates the case type configured by
+`SDKConfig.PEGA_CASE_CLASS_NAME`. From the bottom navigation, use `Create`
+to load and choose another case type advertised by the Pega environment.
+
 ### Integration of CMP module with Native Swift UI application
 
 The application depends on the module [base-cmp-app](../base-cmp-app) that contains shared code in Kotlin Multiplatform.

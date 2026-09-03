@@ -35,6 +35,7 @@ import com.pega.constellation.sdk.kmp.base_cmp_app.generated.resources.Res
 import com.pega.constellation.sdk.kmp.base_cmp_app.generated.resources.icon_contact
 import com.pega.constellation.sdk.kmp.base_cmp_app.generated.resources.icon_home
 import com.pega.constellation.sdk.kmp.base_cmp_app.generated.resources.icon_offers
+import com.pega.constellation.sdk.kmp.base_cmp_app.generated.resources.icon_plus
 import com.pega.constellation.sdk.kmp.base_cmp_app.generated.resources.icon_services
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.ui.screens.main.MainTab
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.ui.theme.MediaCoTheme
@@ -62,24 +63,35 @@ fun MediaCoBottomAppBar(
                 label = "Home",
                 icon = Res.drawable.icon_home,
                 selected = selected == MainTab.Home,
+                modifier = Modifier.weight(1f),
                 onSelected = { onNavItemSelected(MainTab.Home) }
             )
             NavItem(
                 label = "Services",
                 icon = Res.drawable.icon_services,
                 selected = selected == MainTab.Services,
+                modifier = Modifier.weight(1f),
                 onSelected = { onNavItemSelected(MainTab.Services) }
+            )
+            NavItem(
+                label = "Create",
+                icon = Res.drawable.icon_plus,
+                selected = selected == MainTab.Create,
+                modifier = Modifier.weight(1f),
+                onSelected = { onNavItemSelected(MainTab.Create) }
             )
             NavItem(
                 label = "Offers",
                 icon = Res.drawable.icon_offers,
                 selected = false,
+                modifier = Modifier.weight(1f),
                 onSelected = { }
             )
             NavItem(
                 label = "Contact",
                 icon = Res.drawable.icon_contact,
                 selected = false,
+                modifier = Modifier.weight(1f),
                 onSelected = { }
             )
         }
@@ -91,6 +103,7 @@ private fun NavItem(
     label: String,
     icon: DrawableResource,
     selected: Boolean,
+    modifier: Modifier = Modifier,
     onSelected: () -> Unit
 ) {
     val scale by animateFloatAsState(
@@ -105,14 +118,14 @@ private fun NavItem(
     )
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(12.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = onSelected
             )
-            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .padding(horizontal = 4.dp, vertical = 6.dp)
             .scale(scale),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(3.dp)

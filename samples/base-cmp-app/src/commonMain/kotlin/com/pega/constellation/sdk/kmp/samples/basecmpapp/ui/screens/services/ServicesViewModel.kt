@@ -8,6 +8,8 @@ import com.pega.constellation.sdk.kmp.samples.basecmpapp.Injector
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.data.Assignment
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.data.AssignmentsRepository
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +21,7 @@ class ServicesViewModel(
     val assignmentsRepository: AssignmentsRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
+    private var loadJob: Job? = null
 
     @OptIn(FlowPreview::class)
     val uiState: StateFlow<UiState> = _uiState
@@ -32,15 +35,30 @@ class ServicesViewModel(
     }
 
     fun loadAssignments() {
-        viewModelScope.launch {
-            runCatching {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            try {
                 _uiState.value = UiState.Loading
                 val assignments = assignmentsRepository.fetchAssignments()
                 _uiState.value = UiState.Success(assignments)
-            }.onFailure {
-                _uiState.value = UiState.Error("Failed to load assignments: ${it.message}")
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (error: Exception) {
+                _uiState.value = UiState.Error("Failed to load assignments: ${error.message}")
+            }
+        }.also { job ->
+            job.invokeOnCompletion {
+                if (loadJob === job) {
+                    loadJob = null
+                }
             }
         }
+    }
+
+    fun reset() {
+        loadJob?.cancel()
+        loadJob = null
+        _uiState.value = UiState.Loading
     }
 
     companion object {

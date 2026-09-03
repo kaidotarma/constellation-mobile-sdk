@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.auth.AuthState.AuthError
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.auth.AuthState.Authenticated
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.auth.AuthState.TokenExpired
+import com.pega.constellation.sdk.kmp.samples.basecmpapp.ui.screens.createcase.CreateCaseViewModel
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.ui.screens.login.LoginScreen
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.ui.screens.main.MainScreen
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.ui.screens.pega.PegaViewModel
@@ -20,10 +21,18 @@ fun MediaCoApp(
     appViewModel: MediaCoAppViewModel = viewModel(factory = MediaCoAppViewModel.Factory),
     pegaViewModel: PegaViewModel = viewModel(factory = PegaViewModel.Factory),
     servicesViewModel: ServicesViewModel = viewModel(factory = ServicesViewModel.Factory),
+    createCaseViewModel: CreateCaseViewModel = viewModel(factory = CreateCaseViewModel.Factory),
 ) {
     val authState by appViewModel.authState.collectAsState()
     val authenticated = authState == Authenticated
 
+    LaunchedEffect(authenticated) {
+        if (!authenticated) {
+            createCaseViewModel.reset()
+            pegaViewModel.reset()
+            servicesViewModel.reset()
+        }
+    }
     LaunchedEffect(authState) {
         when (val s = authState) {
             is AuthError -> appViewModel.showSnackbar(s.message)
@@ -35,7 +44,7 @@ fun MediaCoApp(
     val isDarkTheme = darkTheme ?: isSystemInDarkTheme()
     MediaCoTheme(isDarkTheme = isDarkTheme) {
         if (authenticated) {
-            MainScreen(appViewModel, pegaViewModel, servicesViewModel)
+            MainScreen(appViewModel, pegaViewModel, servicesViewModel, createCaseViewModel)
         } else {
             LoginScreen(appViewModel)
         }

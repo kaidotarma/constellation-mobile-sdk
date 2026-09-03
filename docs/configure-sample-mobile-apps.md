@@ -18,3 +18,19 @@ The configuration has been prepared to work with the [MediaCo sample Pega applic
 | PEGA_CASE_CLASS_NAME | PegaCaseClassName                   | Name of the case type class to be created                      | DIXL-MediaCo-Work-NewService                    |
 | AUTH_CLIENT_ID       | PegaAuthConfiguration.client_id     | Client ID associated with the OAuth 2.0 client registration    | 25795373220702300272                            |
 | AUTH_REDIRECT_URI    | PegaAuthConfiguration.redirect_uris | Redirect URI associated with the OAuth 2.0 client registration | com.pega.mobile.constellation.sample://redirect |
+
+The CMP sample keeps `PEGA_CASE_CLASS_NAME` as the case type created by the
+`New Service` action. After authentication, the bottom navigation also provides
+`Create`, which loads case types advertised by the Pega
+`D_pxBootstrapConfig` data view and allows the user to choose a different type
+at runtime.
+
+The runtime catalog request is:
+
+```text
+GET {PEGA_URL}/api/application/v2/data_views/D_pxBootstrapConfig
+```
+
+The authenticated response contains a `pyConfigJSON` string. The sample parses
+`environmentInfo.pyCaseTypeList`, displaying `pyWorkTypeName` and passing
+`pyWorkTypeImplementationClassName` to `sdk.createCase(...)`.

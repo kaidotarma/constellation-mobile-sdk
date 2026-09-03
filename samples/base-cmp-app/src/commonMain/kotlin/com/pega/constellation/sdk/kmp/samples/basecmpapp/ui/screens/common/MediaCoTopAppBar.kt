@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Contrast
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
@@ -41,12 +42,14 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun MediaCoTopAppBar(
     modifier: Modifier = Modifier,
-    onThemeSelected: suspend (Boolean?) -> Unit = {}
+    onThemeSelected: suspend (Boolean?) -> Unit = {},
+    onLogout: () -> Unit = {},
 ) {
     val isDarkTheme = LocalIsDarkTheme.current
     val themeIcon = if (isDarkTheme) Icons.Filled.DarkMode else Icons.Filled.LightMode
     val themeIconDescription = if (isDarkTheme) "Dark mode" else "Light mode"
     var showThemeMenu by remember { mutableStateOf(false) }
+    var showProfileMenu by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     TopAppBar(
@@ -115,13 +118,30 @@ fun MediaCoTopAppBar(
             }
         },
         actions = {
-            Icon(
-                painterResource(Res.drawable.icon_profile),
-                "profile icon",
-                modifier = Modifier
-                    .padding(12.dp)
-                    .height(24.dp)
-            )
+            Box {
+                IconButton(onClick = { showProfileMenu = true }) {
+                    Icon(
+                        painterResource(Res.drawable.icon_profile),
+                        contentDescription = "Account menu",
+                        modifier = Modifier.height(24.dp)
+                    )
+                }
+                DropdownMenu(
+                    expanded = showProfileMenu,
+                    onDismissRequest = { showProfileMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        leadingIcon = {
+                            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
+                        },
+                        text = { Text("Logout") },
+                        onClick = {
+                            showProfileMenu = false
+                            onLogout()
+                        }
+                    )
+                }
+            }
         },
         colors = topAppBarColors(
             containerColor = MaterialTheme.colorScheme.background,

@@ -22,6 +22,10 @@ class MediaCoAppViewModel(
         authManager.authenticate()
     }
 
+    fun logout() {
+        authManager.logout()
+    }
+
     suspend fun updateTheme(isDark: Boolean?) {
         preferencesStore.updateTheme(isDark)
     }

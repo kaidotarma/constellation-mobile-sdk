@@ -11,6 +11,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -75,10 +76,30 @@ class AuthManager(
         }
     }
 
-    private suspend fun runAuthFlow() = runCatching {
+    fun logout() {
+        authJob?.cancel()
+        authJob = scope.launch {
+            try {
+                tokenStore.removeTokens()
+                _authState.value = Unauthenticated
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (error: Exception) {
+                Log.e("AuthManager", "Logout failed", error)
+                _authState.value = AuthError(error.message ?: "Logout failed")
+            }
+        }
+    }
+
+    private suspend fun runAuthFlow() = try {
         val flow = authFlowFactory.createAuthFlow(client = createOidcClient())
         val tokens = flow.getAccessToken()
         tokenStore.saveTokens(tokens)
+        Result.success(Unit)
+    } catch (cancellation: CancellationException) {
+        throw cancellation
+    } catch (error: Exception) {
+        Result.failure(error)
     }
 
     private fun createOidcClient() =

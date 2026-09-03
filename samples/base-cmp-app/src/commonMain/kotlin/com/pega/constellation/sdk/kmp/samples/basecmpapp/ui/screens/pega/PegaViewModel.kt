@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.pega.constellation.sdk.kmp.core.ConstellationSdk
 import com.pega.constellation.sdk.kmp.core.ConstellationSdkConfig
+import com.pega.constellation.sdk.kmp.core.Log
 import com.pega.constellation.sdk.kmp.core.api.ComponentManager
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.Injector
 import com.pega.constellation.sdk.kmp.samples.basecmpapp.SDKConfig
@@ -23,7 +24,12 @@ class PegaViewModel(
     var showForm by mutableStateOf(false)
     val sdkState: StateFlow<SdkState> = sdk.state
 
-    fun createCase() {
+    fun createConfiguredCase() {
+        createCase(caseClassName)
+    }
+
+    fun createCase(caseClassName: String) {
+        Log.i("PegaViewModel", "Creating case with selected type: $caseClassName.")
         showForm = true
         sdk.createCase(caseClassName)
     }
@@ -31,6 +37,10 @@ class PegaViewModel(
     fun openAssignment(assignmentID: String) {
         showForm = true
         sdk.openAssignment(assignmentID)
+    }
+
+    fun reset() {
+        showForm = false
     }
 
     companion object {

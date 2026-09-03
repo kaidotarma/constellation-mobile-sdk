@@ -28,6 +28,10 @@ For more information about the configuration, please refer to the [Configuring s
 
 Now, run the application on your Android device or emulator using Android Studio.
 
+The `New Service` action creates the case type configured by
+`SDKConfig.PEGA_CASE_CLASS_NAME`. From the bottom navigation, use `Create`
+to load and choose another case type advertised by the Pega environment.
+
 ### Integration of CMP module with Native Compose application
 
 The application depends on the module [base-cmp-app](../base-cmp-app) that contains shared code in Kotlin Multiplatform.
