@@ -40,7 +40,7 @@ abstract class BaseComponent(
     var pConnectPropertyReference: String by mutableStateOf("")
         private set
 
-    var extraProperties: JsonObject? by mutableStateOf(null)
+    var configAlternateDesignSystem: JsonObject? by mutableStateOf(null)
         private set
 
     var parentId: ComponentId? by mutableStateOf(null)
@@ -50,7 +50,7 @@ abstract class BaseComponent(
 
     override fun onUpdate(props: JsonObject) {
         pConnectPropertyReference = props.optString("pConnectPropertyReference")
-        extraProperties = props["extraProperties"]?.jsonObject
+        configAlternateDesignSystem = props["configAlternateDesignSystem"]?.jsonObject
 
         applyProps(props)
         notifyObservers()

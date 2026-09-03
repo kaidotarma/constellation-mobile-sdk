@@ -92,9 +92,9 @@ class NativeBridge {
             componentProps["pConnectPropertyReference"] = this.#getPropertyReference(component.pConn);
 
             const configProps = component.pConn.resolveConfigProps(component.pConn.getConfigProps());
-            const extraProperties = configProps?.configAlternateDesignSystem;
-            if (extraProperties !== undefined) {
-                componentProps["extraProperties"] = extraProperties;
+            const configAlternateDesignSystem = configProps?.configAlternateDesignSystem;
+            if (configAlternateDesignSystem !== undefined) {
+                componentProps["configAlternateDesignSystem"] = configAlternateDesignSystem;
             }
         }
 
