@@ -44,16 +44,16 @@ The SDK provides following components out-of-the-box:
   - EmbeddedData
   - DataReference
     - Single record
-      - Displayed as "SimpleTable", "Table", "Dropdown", "Autocomplete" - supported
-      - Displayed as "Search and select", "Cards" - not supported
+      - Displayed as "SimpleTable", "Table", "Dropdown", "Autocomplete", "Cards" - supported
+      - Displayed as "Search and select"
       - Read-Only mode
         - Display as "Read-only field" - supported
     - List of records
-      - Displayed as "SimpleTable", "Table", "Combo-box", "Checkbox Group" - supported
-      - Displayed as "Search and select", "Cards" - not supported
+      - Displayed as "SimpleTable", "Table", "Combo-box", "Checkbox Group", "Cards" - supported
+      - Displayed as "Search and select"
       - Read-Only mode
-        - Displayed as "Read-only field", "Table", "SimpleTable" - supported
-        - Displayed as "Map", "Cards" - not supported
+        - Displayed as "Read-only field", "Table", "SimpleTable", "Cards" - supported
+        - Displayed as "Map"
     - Many to many - not supported
   - Details template view
 - **Containers**: 
