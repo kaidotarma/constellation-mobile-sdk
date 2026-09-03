@@ -90,6 +90,12 @@ class NativeBridge {
         let componentProps = component.props;
         if (component.pConn) {
             componentProps["pConnectPropertyReference"] = this.#getPropertyReference(component.pConn);
+
+            const configProps = component.pConn.resolveConfigProps(component.pConn.getConfigProps());
+            const extraProperties = configProps?.configAlternateDesignSystem;
+            if (extraProperties !== undefined) {
+                componentProps["extraProperties"] = extraProperties;
+            }
         }
 
         const props = JSON.stringify(componentProps);
