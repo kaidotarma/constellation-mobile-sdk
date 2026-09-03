@@ -321,10 +321,19 @@ export class FlowContainerComponent extends ContainerBaseComponent {
     }
 
     #getContainerName(oWorkData) {
-        const actionName =
-            this.flowContainerHelper.getActiveCaseActionName?.(this.pConn) ?? this.#getActiveCaseActionName(this.pConn);
+        // On Pega 26 this helper is present but raises for a case with no active case action,
+        // so fall back to the local implementation in that situation too.
+        let actionName;
+        try {
+            actionName = this.flowContainerHelper.getActiveCaseActionName?.(this.pConn);
+        } catch (e) {
+            console.log(TAG, `getActiveCaseActionName unavailable (${e?.message}); using local fallback`);
+        }
+        if (actionName == null) {
+            actionName = this.#getActiveCaseActionName(this.pConn);
+        }
         return this.localizedVal(
-            actionName || oWorkData.caseInfo.assignments?.[0].name,
+            actionName || oWorkData.caseInfo.assignments?.[0]?.name,
             undefined,
             this.localeReference
         );
@@ -333,7 +342,7 @@ export class FlowContainerComponent extends ContainerBaseComponent {
     #getActiveCaseActionName(pConnect) {
         const caseActions = pConnect.getValue(this.pCoreConstants.CASE_INFO.CASE_INFO_ACTIONS);
         const activeActionID = pConnect.getValue(this.pCoreConstants.CASE_INFO.ACTIVE_ACTION_ID);
-        const activeAction = caseActions.find((action) => action.ID === activeActionID);
+        const activeAction = caseActions?.find((action) => action.ID === activeActionID);
         return activeAction?.name || "";
     }
 
