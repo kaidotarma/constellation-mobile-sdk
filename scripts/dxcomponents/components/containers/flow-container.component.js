@@ -271,7 +271,7 @@ export class FlowContainerComponent extends ContainerBaseComponent {
         // this check in routingInfo, mimic Nebula/Constellation (React) to check and get the internals of the
         // flowContainer and force updates to pConnect/redux
         if (!routingInfo) {
-            console.error(TAG, "routingInfo is not available.");
+            console.error(TAG, "RoutingInfo is not available.");
             return;
         }
         const currentOrder = routingInfo.accessedOrder ?? [];
@@ -321,10 +321,18 @@ export class FlowContainerComponent extends ContainerBaseComponent {
     }
 
     #getContainerName(oWorkData) {
-        const actionName =
-            this.flowContainerHelper.getActiveCaseActionName?.(this.pConn) ?? this.#getActiveCaseActionName(this.pConn);
+        const assignmentName = oWorkData?.caseInfo?.assignments?.[0]?.name;
+        let actionName;
+        // Pega 26 may omit caseInfo.availableActions. Prefer the guarded local lookup, then fall back to the CoreJS helper.
+        try {
+            actionName =
+                this.#getActiveCaseActionName(this.pConn) ||
+                this.flowContainerHelper.getActiveCaseActionName?.(this.pConn);
+        } catch {
+            actionName = undefined;
+        }
         return this.localizedVal(
-            actionName || oWorkData.caseInfo.assignments?.[0].name,
+            actionName || assignmentName || "",
             undefined,
             this.localeReference
         );
@@ -332,6 +340,9 @@ export class FlowContainerComponent extends ContainerBaseComponent {
 
     #getActiveCaseActionName(pConnect) {
         const caseActions = pConnect.getValue(this.pCoreConstants.CASE_INFO.CASE_INFO_ACTIONS);
+        if (!Array.isArray(caseActions)) {
+            return "";
+        }
         const activeActionID = pConnect.getValue(this.pCoreConstants.CASE_INFO.ACTIVE_ACTION_ID);
         const activeAction = caseActions.find((action) => action.ID === activeActionID);
         return activeAction?.name || "";
@@ -339,6 +350,10 @@ export class FlowContainerComponent extends ContainerBaseComponent {
 
     #getAssignmentPConn(parentPConnect) {
         const routingInfo = this.jsComponentPConnect.getComponentProp(this, "routingInfo");
+        if (!routingInfo) {
+            console.error(TAG, "Unable to create assignment PConnect: routingInfo is not available.");
+            return null;
+        }
         const flowContainerInfo = { accessedOrder: routingInfo.accessedOrder, items: routingInfo.items };
         const isAssignmentView = this.jsComponentPConnect.getComponentProp(this, "isAssignmentView") ?? false;
         const getPConnect = this.flowContainerHelper.createContainerPConnect(
