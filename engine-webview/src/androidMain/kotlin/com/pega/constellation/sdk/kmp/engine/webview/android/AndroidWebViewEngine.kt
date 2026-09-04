@@ -60,7 +60,7 @@ import java.util.concurrent.TimeUnit
  * @param scope [CoroutineScope] used to dispatch async work. The engine does not cancel this
  * scope on [destroy], prefer lifecycle-aware scopes such as `lifecycleScope` or
  * `viewModelScope` that are canceled automatically when the host is destroyed.
- * @param callFactory Primary client for Constellation DX API requests. You can use [OkHttpClient] or any other implementation of [Call.Factory].
+ * @param callFactory Primary client for Constellation DX API requests, [OkHttpClient] or any other implementation of [Call.Factory].
  * @param nonDxCallFactory Client for non-DX requests. Defaults to [Companion.defaultHttpClient].
  */
 class AndroidWebViewEngine(
