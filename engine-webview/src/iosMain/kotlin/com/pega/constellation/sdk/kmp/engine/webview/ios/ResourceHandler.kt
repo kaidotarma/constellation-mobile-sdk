@@ -29,7 +29,7 @@ class ResourceHandler(
     val mainScope: () -> CoroutineScope
 ) : NSObject(), WKURLSchemeHandlerProtocol {
     var delegate: ResourceHandlerDelegate? = null
-    private val tasks = mutableMapOf<NSURLRequest, Job>()
+    private val tasks = mutableMapOf<WKURLSchemeTaskProtocol, Job>()
 
     @ObjCSignatureOverride
     override fun webView(
@@ -47,7 +47,7 @@ class ResourceHandler(
                     return@launch
                 }
                 Log.i(TAG, "WKURLScheme task is finished. <${startURLSchemeTask.request.URL}>")
-                tasks.remove(startURLSchemeTask.request)
+                tasks.remove(startURLSchemeTask)
                 startURLSchemeTask.didReceiveResponse(response)
                 startURLSchemeTask.didReceiveData(data)
                 startURLSchemeTask.didFinish()
@@ -60,7 +60,7 @@ class ResourceHandler(
                 startURLSchemeTask.didFailWithError(e.toNSError())
             }
         }.let { job ->
-            tasks[startURLSchemeTask.request] = job
+            tasks[startURLSchemeTask] = job
         }
     }
 
@@ -70,8 +70,8 @@ class ResourceHandler(
         stopURLSchemeTask: WKURLSchemeTaskProtocol
     ) {
         Log.i(TAG, "Stopping WKURLScheme task. <${stopURLSchemeTask.request.URL}>")
-        tasks[stopURLSchemeTask.request]?.cancel()
-        tasks.remove(stopURLSchemeTask.request)
+        tasks[stopURLSchemeTask]?.cancel()
+        tasks.remove(stopURLSchemeTask)
     }
 }
 private fun Throwable.toNSError(): NSError {

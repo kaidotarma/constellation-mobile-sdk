@@ -34,7 +34,7 @@ class ResourceProviderManager(
     }
 
     override suspend fun performRequest(request: NSURLRequest): Pair<NSData, NSURLResponse> {
-        val mutableRequest: NSMutableURLRequest = request as NSMutableURLRequest
+        val mutableRequest = request.mutableCopy() as NSMutableURLRequest
         return delegateFor(request).performRequest(
             mutableRequest.removeUnwantedHeaders()
         ).also { (_, response) -> warnIfNonHttpResponse(response) }
