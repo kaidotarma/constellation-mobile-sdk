@@ -4,6 +4,7 @@ import com.pega.constellation.sdk.kmp.core.ConstellationSdk
 import com.pega.constellation.sdk.kmp.core.ConstellationSdk.State
 import com.pega.constellation.sdk.kmp.core.ConstellationSdkConfig
 import com.pega.constellation.sdk.kmp.core.ConstellationSdkEngine
+import com.pega.constellation.sdk.kmp.core.api.Component
 import com.pega.constellation.sdk.kmp.core.components.children
 import com.pega.constellation.sdk.kmp.core.components.containers.AssignmentCardComponent
 import com.pega.constellation.sdk.kmp.core.components.containers.AssignmentComponent
@@ -18,13 +19,16 @@ import com.pega.constellation.sdk.kmp.core.components.containers.ViewContainerCo
 import com.pega.constellation.sdk.kmp.core.components.fields.RichTextComponent
 import com.pega.constellation.sdk.kmp.core.components.fields.TextInputComponent
 import com.pega.constellation.sdk.kmp.core.components.structure
+import com.pega.constellation.sdk.kmp.core.components.widgets.ActionButtonsComponent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.jvm.JvmStatic
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
@@ -110,6 +114,46 @@ abstract class ConstellationSdkBaseTest {
         }
 
     }
+
+    @Test
+    fun test_visible_view_renders_after_hidden_step() = runTest {
+        sdk.createCase("OI1OYV-Marco2-Work-InvisibleDataReferenceTest")
+        val root = sdk.assertState<State.Ready>().root
+        val flowContainer = root.descendants().filterIsInstance<FlowContainerComponent>().single()
+        waitForStep(flowContainer, "DataReference ListOfRecords - Invisible (D-1014611)")
+        val assignmentCard =
+            flowContainer.descendants().filterIsInstance<AssignmentCardComponent>().single()
+        assertTrue(assignmentCard.children.none { it is ViewComponent })
+
+        advanceStep(assignmentCard.children.filterIsInstance<ActionButtonsComponent>().single())
+
+        waitForStep(flowContainer, "DataReference ListOfRecords - Visible (D-1014611)")
+        val assignmentView = assignmentCard.children.filterIsInstance<ViewComponent>().single()
+        assertSame(assignmentCard, assignmentCard)
+        assertTrue(assignmentCard.children.any { it is ActionButtonsComponent })
+        assertTrue(assignmentView.children.single() is DefaultFormComponent)
+    }
+
+    private fun advanceStep(actionButtons: ActionButtonsComponent) {
+        actionButtons.onClick(actionButtons.primaryButtons.single { it.jsAction == "finishAssignment" })
+    }
+
+    private suspend fun waitForStep(flowContainer: FlowContainerComponent, title: String) {
+        waitUntil("Step with title '$title' is not visible") {
+            flowContainer.title == title
+        }
+    }
+
+    private suspend fun waitUntil(errorMessage: String, predicate: () -> Boolean) =
+        withTimeoutOrNull(5.seconds) {
+            while (!predicate()) {
+                delay(10)
+            }
+        } ?: throw IllegalStateException(errorMessage)
+
+
+    private fun Component.descendants(): List<Component> =
+        children().flatMap { listOf(it) + it.descendants() }
 
     companion object {
         private const val PEGA_URL = "https://insert-url-here.example/prweb"

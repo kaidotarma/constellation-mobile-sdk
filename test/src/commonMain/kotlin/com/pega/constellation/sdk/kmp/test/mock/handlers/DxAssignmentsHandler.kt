@@ -57,6 +57,7 @@ class DxAssignmentsHandler : MockHandler {
             assignmentId.contains("E-22056") -> handleEmbeddedDataRepeatingViewTest(actionId)
             assignmentId.contains("E-24003") -> handleEmbeddedDataTableSimpleTableTest(request, actionId)
             assignmentId.contains("E-26028") -> handleEmbeddedDataConditionsTest(actionId)
+            assignmentId.contains("D-1014611") -> handleInvisibleDataReferenceTest(actionId)
             assignmentId.contains("D-7004") -> handleDataReferenceListOfRecordsTest(actionId)
             assignmentId.contains("D-17009") -> handleDataReferenceMultiSelectTest(request, actionId)
             assignmentId.contains("D-32087") -> handleDataReferenceListOfRecordsCardsTest(actionId)
@@ -86,6 +87,13 @@ class DxAssignmentsHandler : MockHandler {
             "DataReferenceListOfRecordsSimpleTable" -> Asset("responses/dx/assignments/DataReferenceListOfRecordsTest-2-TableReadonly.json")
             "DataReferenceListOfRecordsTableReadonly" -> Asset("responses/dx/assignments/DataReferenceListOfRecordsTest-3-SimpleTableReadonly.json")
             "DataReferenceListOfRecordsSimpleTableReadonly" -> Asset("responses/dx/assignments/DataReferenceListOfRecordsTest-4-FieldValue.json")
+            else -> Error(404, "Invalid actionId: $actionId")
+        }
+    }
+
+    private fun handleInvisibleDataReferenceTest(actionId: String): MockResponse {
+        return when (actionId) {
+            "Create" -> Asset("responses/dx/assignments/InvisibleDataReferenceTest-1-Visible.json")
             else -> Error(404, "Invalid actionId: $actionId")
         }
     }

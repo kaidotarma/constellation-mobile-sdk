@@ -77,13 +77,14 @@ export class AssignmentComponent extends ContainerBaseComponent {
     }
 
     update(pConn, childrenPConns, itemKey) {
-        if (this.pConn !== pConn) {
+        const pConnChanged = this.pConn !== pConn;
+        if (pConnChanged) {
             this.pConn = pConn;
         }
         this.childrenPConns = childrenPConns;
         this.itemKey$ = itemKey;
         if (this.bInitialized) {
-            this.updateChanges();
+            this.updateChanges(pConnChanged);
         }
     }
 
@@ -111,8 +112,11 @@ export class AssignmentComponent extends ContainerBaseComponent {
         }
     }
 
-    updateChanges() {
+    updateChanges(rebindActions = false) {
         this.newPConn = ReferenceComponent.normalizePConn(this.pConn);
+        if (rebindActions) {
+            this.#bindActions();
+        }
         this.createButtons();
 
         const assignmentCardArgs = [
@@ -143,7 +147,6 @@ export class AssignmentComponent extends ContainerBaseComponent {
 
         this.templateName$ = this.configProps$.template;
 
-        const actionsAPI = this.newPConn.getActionsApi();
         const baseContext = this.newPConn.getContextName();
         const acName = this.newPConn.getContainerName();
 
@@ -154,7 +157,16 @@ export class AssignmentComponent extends ContainerBaseComponent {
 
         this.newPConn.isBoundToState();
 
-        // store off bound functions to below pointers
+        this.#bindActions();
+        this.onActionButtonClick = this.onActionButtonClick.bind(this);
+
+        if (this.childrenPConns) {
+            this.createButtons();
+        }
+    }
+
+    #bindActions() {
+        const actionsAPI = this.newPConn.getActionsApi();
         this.finishAssignment = actionsAPI.finishAssignment.bind(actionsAPI);
         this.navigateToStep = actionsAPI.navigateToStep.bind(actionsAPI);
         this.saveAssignment = actionsAPI.saveAssignment.bind(actionsAPI);
@@ -164,11 +176,6 @@ export class AssignmentComponent extends ContainerBaseComponent {
         this.cancelCreateStageAssignment = actionsAPI.cancelCreateStageAssignment.bind(actionsAPI);
         this.approveCase = actionsAPI.approveCase?.bind(actionsAPI);
         this.rejectCase = actionsAPI.rejectCase?.bind(actionsAPI);
-        this.onActionButtonClick = this.onActionButtonClick.bind(this);
-
-        if (this.childrenPConns) {
-            this.createButtons();
-        }
     }
 
     setLoading(loading) {

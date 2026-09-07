@@ -7,6 +7,7 @@ const TAG = "[FlowContainerComponent]";
 export class FlowContainerComponent extends ContainerBaseComponent {
     pCoreConstants;
     childrenPConns = [];
+    childPConfig;
     containerName$;
     bannerMessages;
     cancelPressed = false;
@@ -295,11 +296,27 @@ export class FlowContainerComponent extends ContainerBaseComponent {
         if (!childPConfig) {
             return;
         }
+        this.#recreateAssignmentPConnIfChildChanged(childPConfig);
         const childPConn = PCore.createPConnect(childPConfig).getPConnect();
         // getComponent() returns object having getPConnect function inside
         this.childrenPConns = [ReferenceComponent.normalizePConn(childPConn).getComponent()];
         this.containerName$ = this.#getContainerName(childPConn.getDataObject());
         this.assignmentComponent.update(this.assignmentPConn, this.childrenPConns, this.containerContextKey);
+    }
+
+    /**
+     * When child config has changed we need to create new assignment pConn because some already calculated properties
+     * like computed visibility may be outdated and view may not be rendered inside assignment card. (see: BUG-1014611)
+     */
+    #recreateAssignmentPConnIfChildChanged(childPConfig) {
+        if (!this.childPConfig) {
+            this.childPConfig = childPConfig;
+            return;
+        }
+        if (JSON.stringify(this.childPConfig) !== JSON.stringify(childPConfig)) {
+            this.assignmentPConn = this.#getAssignmentPConn(this.pConn);
+            this.childPConfig = childPConfig;
+        }
     }
 
     #getChildPConnConfig(rootView, currentItem, key) {
