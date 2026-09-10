@@ -20,7 +20,7 @@ Specifications are stored under `specs/<feature>/`. This process is documentatio
 
 Use the Gradle Wrapper for all project commands. The SDK currently keeps AGP `8.13.2` and Kotlin `2.4.0` unchanged while using Gradle `9.4.0`.
 
-Currently Pega 24 and Pega 25 are supported.
+The SDK supports Pega 24, Pega 25, and Pega 26. Pega 26 support starts with Constellation Mobile SDK v4.1.0.
 
 The SDK allows developers to:
 - register their implementations for custom components
