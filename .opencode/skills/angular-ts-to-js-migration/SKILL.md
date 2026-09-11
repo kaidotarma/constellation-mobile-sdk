@@ -1,6 +1,6 @@
 ---
 name: angular-ts-to-js-migration
-description: Rules and workflow for migrating Angular TypeScript components to plain ES module JavaScript for the scripts/ bridge layer
+description: Rules and workflow for migrating Angular TypeScript components to plain ES module JavaScript in engine-webview/src/commonMain/composeResources/files/scripts/
 ---
 
 ## Angular TS → JS Migration Rules

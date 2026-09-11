@@ -61,7 +61,7 @@
 
 ## Affected Areas
 
-- Modules: [for example, `core`, `engine-webview`, `ui-components-cmp`, `ui-renderer-cmp`, `scripts`, or `samples`]
+- Modules: [for example, `core`, `engine-webview`, `ui-components-cmp`, `ui-renderer-cmp`, or `samples`]
 - Source sets: [for example, `commonMain`, `androidMain`, `iosMain`, or `jvmMain`]
 - Public APIs or resources: [list or state none]
 

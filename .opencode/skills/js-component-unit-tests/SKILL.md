@@ -1,6 +1,6 @@
 ---
 name: js-component-unit-tests
-description: Rules and guidelines for writing unit tests for JavaScript components in the scripts/ bridge layer
+description: Rules and guidelines for writing unit tests for JavaScript components in engine-webview/src/commonMain/composeResources/files/scripts/
 ---
 
 ## Writing Unit-tests for JS components
